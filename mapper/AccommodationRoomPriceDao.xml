@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.AccommodationRoomPriceDao">
+<resultMap id="roomPriceResultMap" type="com.sist.web.model.AccommodationRoomPrice">
+    <id column="ACCOMM_ROOM_PRICE_ID" property="accommRoomPriceId"/>
+    <result column="ACCOMM_ROOM_ID" property="accommRoomId"/>
+    <result column="ACCOMM_ROOM_PRICE_WEEKDAY" property="accommRoomPriceWeekday"/>
+    <result column="ACCOMM_ROOM_PRICE_FRIDAY" property="accommRoomPriceFriday"/>
+    <result column="ACCOMM_ROOM_PRICE_SATURDAY" property="accommRoomPriceSaturday"/>
+    <result column="ACCOMM_ROOM_PRICE_SUNDAY" property="accommRoomPriceSunday"/>
+    <result column="ACCOMM_ROOM_PRICE_START" property="accommRoomPriceStart"/>
+	<result column="ACCOMM_ROOM_PRICE_END" property="accommRoomPriceEnd"/>
+</resultMap>
+
+<!-- 기간 별 객실 금액 데이터 삽입 -->
+<insert id="insertAccommodationRoomPrice" parameterType="com.sist.web.model.AccommodationRoomPrice">
+    INSERT INTO T_ACCOMM_ROOM_PRICE (ACCOMM_ROOM_PRICE_ID, ACCOMM_ROOM_ID, ACCOMM_ROOM_PRICE_WEEKDAY, ACCOMM_ROOM_PRICE_FRIDAY, ACCOMM_ROOM_PRICE_SATURDAY, ACCOMM_ROOM_PRICE_SUNDAY, ACCOMM_ROOM_PRICE_START, ACCOMM_ROOM_PRICE_END)
+    VALUES (ACCOMM_ROOM_PRICE_SEQ.NEXTVAL, #{accommRoomId}, #{accommRoomPriceWeekday}, #{accommRoomPriceFriday}, #{accommRoomPriceSaturday}, #{accommRoomPriceSunday}, #{accommRoomPriceStart}, #{accommRoomPriceEnd})
+</insert>
+
+<!-- 객실 금액 조회(기간받고), 만약 조건 늘어날 시 새로운 모델 생성해서 할 예정@@  -->
+<select id="selectAccommodationRoomPrice"
+        parameterType="map"
+        resultMap="roomPriceResultMap">
+	SELECT ACCOMM_ROOM_PRICE_ID,
+	       ACCOMM_ROOM_ID,
+	       ACCOMM_ROOM_PRICE_WEEKDAY,
+	       ACCOMM_ROOM_PRICE_FRIDAY,
+	       ACCOMM_ROOM_PRICE_SATURDAY,
+	       ACCOMM_ROOM_PRICE_SUNDAY
+	FROM T_ACCOMM_ROOM_PRICE
+	WHERE ACCOMM_ROOM_ID = #{roomId}
+	 AND TRUNC(TO_DATE(#{targetDate}, 'YYYY-MM-DD'))
+    BETWEEN TRUNC(ACCOMM_ROOM_PRICE_START) AND TRUNC(ACCOMM_ROOM_PRICE_END)
+</select>
+
+<select id="selectRoomPriceByDate" parameterType="map" resultType="com.sist.web.model.AccommodationRoomPrice">
+	SELECT *
+	FROM T_ACCOMM_ROOM_PRICE
+	WHERE ACCOMM_ROOM_ID = #{roomId}
+	  AND #{targetDate} BETWEEN ACCOMM_ROOM_PRICE_START AND ACCOMM_ROOM_PRICE_END
+</select>
+
+<select id="selectByAccommRoomId" parameterType="map" resultMap="roomPriceResultMap">
+	SELECT *
+	FROM T_ACCOMM_ROOM_PRICE
+	WHERE ACCOMM_ROOM_ID = #{roomId}
+</select>
+
+<select id="checkDateOverlap" parameterType="map" resultType="int">
+  SELECT COUNT(1)
+  FROM T_ACCOMM_ROOM_PRICE
+  WHERE ACCOMM_ROOM_ID = #{roomId}
+    <![CDATA[
+    AND ACCOMM_ROOM_PRICE_START <= #{endDate}
+    AND ACCOMM_ROOM_PRICE_END   >= #{startDate}
+    ]]>
+</select>
+<delete id="deleteRoomPrice" parameterType="String">
+  DELETE FROM T_ACCOMM_ROOM_PRICE
+  WHERE ACCOMM_ROOM_PRICE_ID = #{priceId}
+</delete>
+</mapper>

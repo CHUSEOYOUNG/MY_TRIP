@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sist.web.dao.TourDao">
+
+    <!-- ResultMap -->
+    <resultMap id="tourResultMap" type="com.sist.web.model.Tour">
+        <id column="TOUR_ID" property="tourId"/>
+        <result column="UNIFIED_ID" property="unifiedId"/>
+        <result column="REGION_ID" property="regionId"/>
+        <result column="TOUR_NAME" property="tourName"/>
+        <result column="TOUR_LAT" property="tourLat"/>
+        <result column="TOUR_LON" property="tourLon"/>
+        <result column="TOUR_ADD" property="tourAdd"/>
+        <result column="TOUR_DES" property="tourDes"/>
+        <result column="SIGUNGU_CODE" property="sigunguId"/>
+        <result column="TOUR_IMAGE" property="tourImage"/>
+    </resultMap>
+
+    <!-- Insert (중복방지 방식 동일 적용) -->
+    <insert id="insertTour" parameterType="com.sist.web.model.Tour">
+        INSERT INTO T_TOUR (
+            TOUR_ID, UNIFIED_ID, REGION_ID, TOUR_NAME, TOUR_LAT, TOUR_LON, TOUR_ADD, TOUR_DES, SIGUNGU_ID, TOUR_IMAGE
+        )
+        SELECT 
+            #{tourId},
+            CONCAT('T_', TO_CHAR(TOUR_SEQ.NEXTVAL)),
+            #{regionId},
+            #{tourName},
+            #{tourLat},
+            #{tourLon},
+            #{tourAdd},
+            #{tourDes, jdbcType=CLOB},
+            #{sigunguId},
+            #{tourImage}
+        FROM dual
+        WHERE NOT EXISTS (
+            SELECT 1 FROM T_TOUR WHERE TOUR_ID = #{tourId}
+        )
+    </insert>
+
+    <!-- 전체 조회 -->
+    <select id="getAllTours" resultMap="tourResultMap">
+        SELECT * FROM T_TOUR
+    </select>
+
+    <!-- 존재여부 체크 -->
+    <select id="existsTour" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM T_TOUR WHERE TOUR_ID = #{tourId}
+    </select>
+	
+	<!-- 상세정보띄울떄 객체 가져오는용도(/list/view와 같음) -->
+	<select id = "selectTour" parameterType = "String" resultType = "com.sist.web.model.Tour">
+		SELECT * FROM T_TOUR
+		WHERE TOUR_ID = #{tourId};
+	</select>
+	
+	<select id="searchBySigungu" resultMap="tourResultMap" parameterType="map">
+	  SELECT * FROM (
+	    SELECT a.*, ROWNUM rnum FROM (
+	      SELECT * FROM T_TOUR
+	      <where>
+	        <if test="list != null and !list.isEmpty()">
+	          <foreach collection="list" item="sigungu" separator="OR" open="(" close=")">
+	            <choose>
+	              <when test="sigungu.sigunguId == null or sigungu.sigunguId == ''">
+	                REGION_ID = #{sigungu.regionId}
+	              </when>
+	              <otherwise>
+	                (REGION_ID = #{sigungu.regionId} AND SIGUNGU_CODE = #{sigungu.sigunguId})
+	              </otherwise>
+	            </choose>
+	          </foreach>
+	        </if>
+	      </where>
+	      ORDER BY TOUR_ID DESC
+	    ) a
+	    WHERE ROWNUM <![CDATA[ <= ]]> #{end}
+	  )
+	  WHERE rnum <![CDATA[ > ]]> #{start}
+	</select>
+	
+	<select id="getTourCount" resultType="int" parameterType="map">
+	  SELECT COUNT(*) FROM T_TOUR
+	  <where>
+	    <if test="list != null and !list.isEmpty()">
+	      <foreach collection="list" item="sigungu" separator="OR" open="(" close=")">
+	        <choose>
+	          <when test="sigungu.sigunguId == null or sigungu.sigunguId == ''">
+	            REGION_ID = #{sigungu.regionId}
+	          </when>
+	          <otherwise>
+	            (REGION_ID = #{sigungu.regionId} AND SIGUNGU_CODE = #{sigungu.sigunguId})
+	          </otherwise>
+	        </choose>
+	      </foreach>
+	    </if>
+	  </where>
+	</select>
+</mapper>

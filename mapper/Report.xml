@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.ReportDao">
+	  <resultMap type="com.sist.web.model.Report" id="reportResultMap">
+	       <result column="USER_ID" property="userId" />
+		   <result column="PLAN_ID" property="planId" />
+		   <result column="REPORT_REASON" property="reportReason" />
+	  </resultMap>
+	  
+	  <!-- 신고 했나 조회 -->
+	  <select id="reportInquiry" parameterType="com.sist.web.model.Report" resultType="int">
+		  SELECT COUNT(*) AS TOTAL_CNT
+			FROM T_REPORT
+			WHERE PLAN_ID = #{planId}
+			AND USER_ID = #{userId}
+	  </select>
+	  
+	  <!-- 신고 insert -->
+	  <insert id="reportInsert" parameterType="com.sist.web.model.Report">
+	  	INSERT INTO T_REPORT VALUES(#{planId}, #{userId}, #{reportReason})
+	  </insert>
+	  
+</mapper>

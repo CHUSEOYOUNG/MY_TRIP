@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.LikeDao">
+<resultMap id="likeBasicResultMap" type="com.sist.web.model.Like">
+  <id property="likeId" column="LIKE_ID"/>
+  <result property="userId" column="USER_ID"/>
+  <result property="spotId" column="SPOT_ID"/>
+</resultMap>
+<resultMap id="likeSpotResultMap" type="com.sist.web.model.Like">
+        <id property="likeId" column="LIKE_ID"/>
+        <result property="userId" column="USER_ID"/>
+        <result property="spotId" column="SPOT_ID"/>
+            <result property="tourName" column="TOUR_NAME"/>
+    <result property="tourImage" column="TOUR_IMAGE"/>
+    <result property="tourAdd" column="TOUR_ADD"/>
+</resultMap>
+
+<resultMap id="likeAccommResultMap" type="com.sist.web.model.Like">
+  <id property="likeId" column="LIKE_ID"/>
+  <result property="userId" column="USER_ID"/>
+  <result property="spotId" column="SPOT_ID"/>
+  <result property="accomName" column="ACCOMM_NAME"/>
+  <result property="firstImage" column="FIRST_IMAGE"/>
+  <result property="accomAdd" column="ACCOMM_ADD"/>
+</resultMap>    
+    
+ <insert id="insertLike" parameterType="com.sist.web.model.Like">
+    <selectKey keyProperty="likeId" resultType="string" order="BEFORE">
+        SELECT 'L_' || TO_CHAR(SEQ_LIKE_ID.NEXTVAL) FROM DUAL
+    </selectKey>
+    
+    INSERT INTO T_LIKE (LIKE_ID, USER_ID, SPOT_ID)
+    VALUES (#{likeId}, #{userId}, #{spotId})
+</insert>
+
+  <!-- 찜 삭제 -->
+  <delete id="deleteLike">
+    DELETE FROM T_LIKE
+    WHERE USER_ID = #{userId} AND SPOT_ID = #{spotId}
+  </delete>
+
+  <!-- 찜 상태 확인 -->
+  <select id="checkLike" resultType="int">
+    SELECT COUNT(*)
+    FROM T_LIKE
+    WHERE USER_ID = #{userId} AND SPOT_ID = #{spotId}
+  </select>
+
+  <!-- 사용자별 찜 목록 -->
+
+<select id="findByUserId" resultMap="likeBasicResultMap">
+  SELECT LIKE_ID, USER_ID, SPOT_ID
+  FROM T_LIKE
+  WHERE USER_ID = #{userId}
+</select>
+
+
+
+  <!-- 특정 spot의 찜 개수 -->
+  <select id="countBySpotId" resultType="int">
+    SELECT COUNT(*)
+    FROM T_LIKE
+    WHERE SPOT_ID = #{spotId}
+  </select>
+<select id="findByUserIdWithDetail" resultMap="likeSpotResultMap">
+ SELECT
+    l.LIKE_ID,
+    l.USER_ID,
+    l.SPOT_ID,
+    v.TOUR_NAME,
+    v.TOUR_IMAGE,
+    v.TOUR_ADD
+  FROM T_LIKE l
+  JOIN (SELECT TOUR_ID AS SPOT_ID, TOUR_NAME, TOUR_IMAGE, TOUR_ADD
+    FROM T_TOUR)v ON l.SPOT_ID = v.SPOT_ID
+  WHERE l.USER_ID = #{userId}
+</select>
+
+
+<insert id="insertAccommLike" >
+    INSERT INTO T_LIKE (LIKE_ID, USER_ID, SPOT_ID)
+    VALUES ('A_' || TO_CHAR(SEQ_LIKE_ID.NEXTVAL), #{userId}, #{spotId})
+</insert>
+
+
+  <!-- 숙소 찜 해제 -->
+<delete id="deleteAccommLike">
+    DELETE FROM T_LIKE
+    WHERE USER_ID = #{userId}
+      AND SPOT_ID = #{spotId}
+</delete>
+
+<select id="isAccommLiked" resultType="boolean">
+    SELECT COUNT(*)
+    FROM T_LIKE
+    WHERE USER_ID = #{userId}
+      AND SPOT_ID = #{spotId}
+</select>
+<select id="getAccommLikeCount" resultType="int">
+    SELECT COUNT(*)
+    FROM T_LIKE
+    WHERE SPOT_ID = #{spotId}
+</select>
+<select id="findAccommLikeListByUser" resultMap="likeAccommResultMap">
+  SELECT
+    l.LIKE_ID,
+    l.USER_ID,
+    l.SPOT_ID,
+    v.ACCOMM_NAME AS ACCOMM_NAME,
+    v.FIRST_IMAGE AS FIRST_IMAGE,
+    v.ACCOMM_ADD  AS ACCOMM_ADD
+  FROM T_LIKE l
+  JOIN (
+    SELECT
+      ACCOMM_ID    AS SPOT_ID,
+      ACCOMM_NAME,
+      FIRST_IMAGE,
+      ACCOMM_ADD
+    FROM T_ACCOMM
+  ) v ON l.SPOT_ID = v.SPOT_ID
+  WHERE l.USER_ID = #{userId}
+    AND l.LIKE_ID LIKE 'A_%'
+</select>
+
+</mapper>

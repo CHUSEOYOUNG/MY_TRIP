@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sist.web.dao.OrderDao">
+
+    <!-- 주문 resultMap -->
+    <resultMap id="orderResultMap" type="com.sist.web.model.Order">
+        <id column="ORDER_ID" property="orderId"/>
+        <result column="USER_ID" property="userId"/>
+        <result column="REFUND_ID" property="refundId"/>
+        <result column="ORDER_TOTAL_AMOUNT" property="orderTotalAmount"/>
+        <result column="ORDER_DATE" property="orderDate"/>
+        <result column="ORDER_STATUS" property="orderStatus"/>
+        <result column="ORDER_EXPEND_POINT" property="orderExpendPoint"/>
+        <result column="ORDER_COUPON_ID" property="orderCouponId"/>
+        <result column="ORDER_TID" property="orderTid"/>
+    </resultMap>
+
+    <!-- 상세 주문 resultMap -->
+    <resultMap id="orderDetailResultMap" type="com.sist.web.model.OrderDetail">
+        <id column="ORDER_DETAILS_ID" property="orderDetailsId"/>
+        <result column="ACCOMM_ROOM_ID" property="accommRoomId"/>
+        <result column="ORDER_ID" property="orderId"/>
+        <result column="ORDER_DETAILS_ROOM_EACH_PRICE" property="orderDetailsRoomEachPrice"/>
+        <result column="ORDER_DETAILS_PEOPLE_COUNT" property="orderDetailsPeopleCount"/>
+        <result column="ORDER_DETAILS_PAYMENT_METHOD" property="orderDetailsPaymentMethod"/>
+        <result column="ORDER_DETAILS_COUNT" property="orderDetailsCount"/>
+        <result column="ORDER_DETAILS_CHECKIN_DATE" property="orderDetailsCheckinDate"/>
+        <result column="ORDER_DETAILS_CHECKOUT_DATE" property="orderDetailsCheckoutDate"/>
+    </resultMap>
+    
+    
+<!-- 결제 상세 조회에 모든 것을 띄우기 위한 resultMap -->
+<resultMap id="orderAllDetailsResultMap" type="com.sist.web.model.OrderDetail">
+    <!-- 기본 주문 상세 필드 -->
+    <id column="ORDER_DETAILS_ID" property="orderDetailsId"/>
+    <result column="ACCOMM_ROOM_ID" property="accommRoomId"/>
+    <result column="ORDER_ID" property="orderId"/>
+    <result column="ORDER_DETAILS_ROOM_EACH_PRICE" property="orderDetailsRoomEachPrice"/>
+    <result column="ORDER_DETAILS_PEOPLE_COUNT" property="orderDetailsPeopleCount"/>
+    <result column="ORDER_DETAILS_PAYMENT_METHOD" property="orderDetailsPaymentMethod"/>
+    <result column="ORDER_DETAILS_COUNT" property="orderDetailsCount"/>
+    <result column="ORDER_DETAILS_CHECKIN_DATE" property="orderDetailsCheckinDate"/>
+    <result column="ORDER_DETAILS_CHECKOUT_DATE" property="orderDetailsCheckoutDate"/>
+
+    <!-- 객실 정보 (AccommRoom) -->
+    <association property="accommRoom" javaType="com.sist.web.model.AccommodationRoom">
+    <result column="ACCOMM_ROOM_ID"              property="accommRoomId"/>
+    <result column="ACCOMM_ID"                   property="accommId"/>
+    <result column="ACCOMM_ROOM_NAME"            property="roomName"/>
+    <result column="ACCOMM_ROOM_SCALE"           property="roomScale"/>
+    <result column="ACCOMM_ROOM_COUNT"           property="roomCount"/>
+    <result column="ACCOMM_ROOM_STANDARD_PERSON" property="standardPerson"/>
+    <result column="ACCOMM_ROOM_BATHROOM"        property="bathroom"/>
+    <result column="ACCOMM_ROOM_BATH"            property="bath"/>
+    <result column="ACCOMM_ROOM_TV"              property="tv"/>
+    <result column="ACCOMM_ROOM_PC"              property="pc"/>
+    <result column="ACCOMM_ROOM_INTERNET"        property="internet"/>
+    <result column="ACCOMM_ROOM_REFRIGERATOR"    property="refrigerator"/>
+    <result column="ACCOMM_ROOM_SOFA"            property="sofa"/>
+    <result column="ACCOMM_ROOM_TABLE"           property="table"/>
+    <result column="ACCOMM_ROOM_DRYER"           property="dryer"/>
+    <result column="ACCOMM_ROOM_CHECKIN"         property="checkIn"/>
+    <result column="ACCOMM_ROOM_CHECKOUT"        property="checkOut"/>
+    <result column="ACCOMM_ROOM_STANDARD_PRICE"  property="standardPrice"/>
+    <result column="ACCOMM_ROOM_IMAGE"			 property="roomImage"/>
+    </association>
+
+    <!-- 숙소 정보 (Accomm) -->
+    <association property="accomm" javaType="com.sist.web.model.Accommodation">
+        <result column="ACCOMM_ID" property="accomId"/>
+        <result column="REGION_ID" property="regionId"/>
+        <result column="SIGUNGU_CODE" property="sigunguCode"/>
+        <result column="ZIPCODE" property="zipcode"/>
+        <result column="SELLER_ID" property="sellerId"/>
+        <result column="ACCOMM_STATUS" property="accomStatus"/>
+        <result column="ACCOMM_NAME" property="accomName"/>
+        <result column="ACCOMM_TEL" property="accomTel"/>
+        <result column="ACCOMM_ADD" property="accomAdd"/>
+        <result column="ACCOMM_ADD2" property="accomAdd2"/>
+        <result column="ACCOMM_DES" property="accomDes"/>
+        <result column="ACCOMM_LAT" property="accomLat"/>
+        <result column="ACCOMM_LON" property="accomLon"/>
+        <result column="FIRST_IMAGE" property="firstImage"/>
+        <result column="FIRST_IMAGE2" property="firstImage2"/>
+        <result column="ACCOMM_AVG" property="accomAvg"/>
+    </association>
+</resultMap>
+
+<!--=====================resultMap END =====================-->
+
+    <!-- 주문 INSERT -->
+    <insert id="insertOrder" parameterType="com.sist.web.model.Order">
+        INSERT INTO T_ORDER (
+            ORDER_ID,
+            USER_ID,
+            REFUND_ID,
+            ORDER_TOTAL_AMOUNT,
+            ORDER_DATE,
+            ORDER_STATUS,
+            ORDER_EXPEND_POINT,
+            ORDER_COUPON_ID,
+            ORDER_TID
+        )
+        VALUES (
+            #{orderId},
+            #{userId},
+            #{refundId},
+            #{orderTotalAmount},
+            SYSDATE,
+            #{orderStatus},
+            #{orderExpendPoint},
+            #{orderCouponId},
+            #{orderTid}
+        )
+    </insert>
+
+    <!-- 상세 주문 INSERT -->
+    <insert id="insertOrderDetail" parameterType="com.sist.web.model.OrderDetail">
+        INSERT INTO T_ORDER_DETAILS (
+            ORDER_DETAILS_ID,
+            ACCOMM_ROOM_ID,
+            ORDER_ID,
+            ORDER_DETAILS_ROOM_EACH_PRICE,
+            ORDER_DETAILS_PEOPLE_COUNT,
+            ORDER_DETAILS_PAYMENT_METHOD,
+            ORDER_DETAILS_COUNT,
+            ORDER_DETAILS_CHECKIN_DATE,
+            ORDER_DETAILS_CHECKOUT_DATE
+        )
+        VALUES (
+            #{orderDetailsId},
+            #{accommRoomId},
+            #{orderId},
+            #{orderDetailsRoomEachPrice},
+            #{orderDetailsPeopleCount},
+            #{orderDetailsPaymentMethod},
+            #{orderDetailsCount},
+            #{orderDetailsCheckinDate},
+            #{orderDetailsCheckoutDate}
+        )
+    </insert>
+
+    <!-- 주문 단건 조회 -->
+    <select id="selectOrderById" parameterType="String" resultMap="orderResultMap">
+        SELECT *
+        FROM T_ORDER
+        WHERE ORDER_ID = #{orderId}
+    </select>
+
+    <!-- 상세 주문 조회 -->
+    <select id="selectOrderDetailsByOrderId" parameterType="String" resultMap="orderDetailResultMap">
+        SELECT *
+        FROM T_ORDER_DETAILS
+        WHERE ORDER_ID = #{orderId}
+    </select>
+	
+	<select id = "getRefundSeq" resultType = "String">
+	SELECT 'R' || T_REFUND_SEQ.NEXTVAL FROM DUAL
+	</select>
+	
+	<update id = "updateOrderStatus" parameterType = "Map">
+		UPDATE T_ORDER
+		SET ORDER_STATUS = #{orderStatus}
+		WHERE ORDER_ID = #{orderId}
+	</update>
+	<update id = "updateOrderRefund" parameterType = "Map">
+		UPDATE T_ORDER
+		SET REFUND_ID  = #{refundId}, ORDER_STATUS = 'R'
+		WHERE ORDER_ID =  #{orderId}		
+	</update>
+	
+	<select id="selectExpiredOrderIds" resultType="string" parameterType="map">
+	    SELECT ORDER_ID
+	    FROM T_ORDER
+	    WHERE ORDER_STATUS = #{status}
+	      AND <![CDATA[ ORDER_DATE < SYSDATE - (1/24) ]]>
+	</select>
+	
+	<delete id="deleteOrderDetailsByOrderId">
+	    DELETE FROM T_ORDER_DETAILS
+	    WHERE ORDER_ID = #{orderId}
+	</delete>
+	
+	<delete id="deleteOrderById">
+	    DELETE FROM T_ORDER
+	    WHERE ORDER_ID = #{orderId}
+	</delete>
+	
+	<!-- 유저 결제 내역 조회 -->
+	<select id="userOrderlist" parameterType="String" resultMap="orderResultMap">
+		SELECT
+		    ORDER_ID,
+		    USER_ID,
+		    REFUND_ID,
+		    ORDER_TOTAL_AMOUNT,
+		    ORDER_DATE,
+		    ORDER_STATUS,
+		    ORDER_EXPEND_POINT,
+		    ORDER_COUPON_ID,
+		    ORDER_TID
+		FROM
+		    T_ORDER
+		WHERE
+		    USER_ID = #{value}
+		AND
+		    (ORDER_STATUS = 'S' OR ORDER_STATUS = 'R')
+		ORDER BY ORDER_DATE DESC
+	</select>
+	
+	<!-- 유저 결제 상세 조회 -->
+	<select id="userOrderDetails" parameterType="String" resultMap="orderAllDetailsResultMap">
+			SELECT
+
+			d.ORDER_DETAILS_ID,
+		    d.ACCOMM_ROOM_ID,
+		    d.ORDER_ID,
+		    d.ORDER_DETAILS_ROOM_EACH_PRICE,
+		    d.ORDER_DETAILS_PEOPLE_COUNT,
+		    d.ORDER_DETAILS_PAYMENT_METHOD,
+		    d.ORDER_DETAILS_COUNT,
+		    d.ORDER_DETAILS_CHECKIN_DATE,
+		    d.ORDER_DETAILS_CHECKOUT_DATE,
+
+		    r.ACCOMM_ROOM_ID,
+		    r.ACCOMM_ID,
+		    r.ACCOMM_ROOM_NAME,
+		    r.ACCOMM_ROOM_SCALE,
+		    r.ACCOMM_ROOM_COUNT,
+		    r.ACCOMM_ROOM_STANDARD_PERSON,
+		    r.ACCOMM_ROOM_BATHROOM,
+		    r.ACCOMM_ROOM_BATH,
+		    r.ACCOMM_ROOM_TV,
+		    r.ACCOMM_ROOM_PC,
+		    r.ACCOMM_ROOM_INTERNET,
+		    r.ACCOMM_ROOM_REFRIGERATOR,
+		    r.ACCOMM_ROOM_SOFA,
+		    r.ACCOMM_ROOM_TABLE,
+		    r.ACCOMM_ROOM_DRYER,
+		    r.ACCOMM_ROOM_CHECKIN,
+		    r.ACCOMM_ROOM_CHECKOUT,
+		    r.ACCOMM_ROOM_STANDARD_PRICE,
+		    r.ACCOMM_ROOM_IMAGE,
+
+	        a.ACCOMM_ID,
+		    a.REGION_ID,
+		    a.SELLER_ID,
+		    a.ACCOMM_STATUS,
+		    a.ACCOMM_NAME,
+		    a.ACCOMM_TEL,
+		    a.ACCOMM_ADD,
+		    a.ACCOMM_LAT,
+		    a.ACCOMM_LON,
+		    a.ACCOMM_AVG,
+		    a.ACCOMM_ADD2,
+		    a.SIGUNGU_CODE,
+		    a.ZIPCODE,
+		    a.FIRST_IMAGE,
+		    a.FIRST_IMAGE2,
+		    a.ACCOMM_DES,
+		    a.UNIFIED_ID
+		
+		FROM
+		    T_ORDER_DETAILS d
+		    JOIN T_ACCOMM_ROOM r  ON d.ACCOMM_ROOM_ID = r.ACCOMM_ROOM_ID
+		    JOIN T_ACCOMM a       ON r.ACCOMM_ID = a.ACCOMM_ID
+		WHERE
+		    d.ORDER_ID = #{value}
+	</select>
+	
+	<!-- 체크인 날짜 하루 전인지 -->
+	<select id="userOrderCheckin" parameterType="String" resultType="int">
+		<![CDATA[
+		  SELECT COUNT(*)
+		  FROM T_ORDER_DETAILS
+		  WHERE SYSDATE <= ORDER_DETAILS_CHECKIN_DATE - 1
+		  AND ORDER_ID = #{value}
+		]]>
+	</select>
+	
+	<!-- 체크아웃 날짜 한달 이내인지 -->
+	<select id="userOrderCheckout" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+		FROM T_ORDER_DETAILS
+		WHERE SYSDATE BETWEEN ORDER_DETAILS_CHECKOUT_DATE AND ADD_MONTHS(ORDER_DETAILS_CHECKOUT_DATE, 1)
+		AND ORDER_ID = #{value}
+	</select>
+	
+	<!-- 판매자 페이지에서 정산 내역 띄워주기 -->
+	<select id="sellerSellList" parameterType="String" resultMap="orderAllDetailsResultMap">
+        SELECT
+			d.ORDER_DETAILS_ID,
+		    d.ORDER_ID,
+		    d.ORDER_DETAILS_ROOM_EACH_PRICE,
+		    d.ORDER_DETAILS_PAYMENT_METHOD,
+		    d.ORDER_DETAILS_CHECKIN_DATE,
+		    d.ORDER_DETAILS_CHECKOUT_DATE,
+
+		    r.ACCOMM_ROOM_ID,
+		    r.ACCOMM_ID,
+		    r.ACCOMM_ROOM_NAME,
+
+		    a.ACCOMM_NAME,
+		    a.ACCOMM_ADD
+		FROM
+		    T_ORDER_DETAILS d
+		    JOIN T_ACCOMM_ROOM r  ON d.ACCOMM_ROOM_ID = r.ACCOMM_ROOM_ID
+		    JOIN T_ACCOMM a       ON r.ACCOMM_ID = a.ACCOMM_ID
+		WHERE
+		    a.SELLER_ID = #{value}
+        ORDER BY d.ORDER_DETAILS_CHECKIN_DATE, d.ORDER_DETAILS_CHECKOUT_DATE
+	</select>
+	
+	<!-- 판매자 총 정산 금액 -->
+	<select id="sellerSum" parameterType="String" resultType="int">
+		SELECT
+		    SUM(d.ORDER_DETAILS_ROOM_EACH_PRICE) AS total_amount
+		FROM
+		    T_ORDER_DETAILS d
+		    JOIN T_ACCOMM_ROOM r ON d.ACCOMM_ROOM_ID = r.ACCOMM_ROOM_ID
+		    JOIN T_ACCOMM a ON r.ACCOMM_ID = a.ACCOMM_ID
+		WHERE
+		    a.SELLER_ID = #{value}
+		    AND d.ORDER_DETAILS_CHECKIN_DATE >= ADD_MONTHS(SYSDATE, -1)
+	</select>
+</mapper>

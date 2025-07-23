@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sist.web.dao.SigunguDao">
+
+    <resultMap id="sigunguResultMap" type="com.sist.web.model.Sigungu">
+        <id column="REGION_ID" property="regionId"/>
+        <id column="SIGUNGU_ID" property="sigunguId"/>
+        <result column="SIGUNGU_NAME" property="sigunguName"/>
+        <result column="SIGUNGU_LAT" property="sigunguLat"/>
+        <result column="SIGUNGU_LON" property="sigunguLon"/>
+    </resultMap>
+
+    <insert id="insertSigungu" parameterType="com.sist.web.model.Sigungu">
+        INSERT INTO T_SIGUNGU (REGION_ID, SIGUNGU_ID, SIGUNGU_NAME, SIGUNGU_LAT, SIGUNGU_LON)
+        SELECT #{regionId}, #{sigunguId}, #{sigunguName}, #{sigunguLat}, #{sigunguLon}
+        FROM dual
+        WHERE NOT EXISTS (
+            SELECT 1 FROM T_SIGUNGU 
+            WHERE REGION_ID = #{regionId}
+              AND SIGUNGU_ID = #{sigunguId}
+        )
+    </insert>
+	
+	<!-- 모든 시군구 가져오기 -->
+    <select id="getAllSigungu" resultMap="sigunguResultMap">
+        SELECT * FROM T_SIGUNGU
+    </select>
+	
+	<!-- 광역시/도에 맞는 시군구 가져오기 -->
+	<select id = "getSigunguByRegionID" parameterType = "String" resultMap = "sigunguResultMap">
+		SELECT *
+		FROM T_SIGUNGU 
+		WHERE REGION_ID = #{regionId}
+	</select>
+	
+    <select id="existsSigungu" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM T_SIGUNGU 
+        WHERE REGION_ID = #{regionId}
+          AND SIGUNGU_ID = #{sigunguId}
+    </select>
+    
+    <select id="sigunguSelect" resultMap="sigunguResultMap">
+        SELECT REGION_ID, SIGUNGU_ID
+        FROM T_SIGUNGU 
+        WHERE REGION_ID = #{regionId}
+        AND SIGUNGU_NAME = #{sigunguName}   
+    </select>
+
+</mapper>

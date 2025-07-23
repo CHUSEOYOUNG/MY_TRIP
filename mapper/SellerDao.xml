@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace= "com.sist.web.dao.SellerDao">
+
+  <resultMap type="com.sist.web.model.Seller" id="sellerResultMap">
+  	<id column="SELLER_ID"  	property="sellerId" />
+  	<result column="SELLER_NAME"  property="sellerName" />
+  	<result column="SELLER_NUMBER"  property="sellerNumber" />
+  	<result column="SELLER_PASSWORD"  property="sellerPassword" />
+  	<result column="SELLER_BUSINESS"  property="sellerBusiness" />
+  	<result column="SELLER_EMAIL"  property="sellerEmail" />
+  	<result column="SELLER_STATUS"   property="sellerStatus" />
+  	<result column="SELLER_REGDATE"  property="sellerRegdate" />
+  	<result column="SELLER_SELLNUMBER" property="sellerSellnumber" />
+  </resultMap>
+  
+  <select id="sellerSelect" parameterType="String" resultMap="sellerResultMap">
+	  SELECT SELLER_ID,
+	       	NVL(SELLER_NAME,'') SELLER_NAME,
+	       	NVL(SELLER_NUMBER,'') SELLER_NUMBER,
+	       	NVL(SELLER_PASSWORD,'') SELLER_PASSWORD,
+	       	NVL(SELLER_BUSINESS, '') SELLER_BUSINESS,
+	       	NVL(SELLER_EMAIL, '') SELLER_EMAIL,
+	       	NVL(SELLER_STATUS, 'N') SELLER_STATUS,
+	       	NVL(TO_CHAR(SELLER_REGDATE,'YYYY-MM-DD'),'') SELLER_REGDATE,
+	       	NVL(SELLER_SELLNUMBER,'') SELLER_SELLNUMBER
+	  FROM T_SELLER
+	  WHERE SELLER_ID = #{value}
+  </select> 
+  
+  <insert id="sellerInsert" parameterType="com.sist.web.model.Seller">
+	   	INSERT INTO T_SELLER (
+		   	SELLER_ID, 
+		   	SELLER_NAME, 
+		   	SELLER_NUMBER, 
+		   	SELLER_PASSWORD, 
+		   	SELLER_BUSINESS, 
+		   	SELLER_EMAIL, 
+		   	SELLER_STATUS, 
+		   	SELLER_REGDATE, 
+		   	SELLER_SELLNUMBER
+	   	) VALUES (
+			#{sellerId},
+			#{sellerName},
+			#{sellerNumber},
+			#{sellerPassword},
+			#{sellerBusiness},
+			#{sellerEmail},
+			'N',
+			SYSDATE,
+			#{sellerSellnumber})
+  </insert>
+  
+  <update id="sellerUpdate" parameterType="com.sist.web.model.Seller">
+  		UPDATE T_SELLER
+  		  SET SELLER_NUMBER = #{sellerNumber},
+  		      SELLER_BUSINESS = #{sellerBusiness},
+  		      SELLER_EMAIL = #{sellerEmail},
+  		      SELLER_REGDATE = SYSDATE,
+  		      SELLER_SELLNUMBER = #{sellerSellnumber}
+  		WHERE SELLER_ID = #{sellerId}
+  </update>
+  
+  <update id="sellerPasswordChange" parameterType="com.sist.web.model.Seller">
+  		UPDATE T_SELLER
+		  SET SELLER_PASSWORD = #{sellerPassword}
+		WHERE SELLER_ID = #{sellerId}
+  </update>
+  
+  
+
+  
+</mapper>

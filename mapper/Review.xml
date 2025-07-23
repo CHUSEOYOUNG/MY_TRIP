@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.ReviewDao">
+	  <resultMap type="com.sist.web.model.Review" id="reviewResultMap">
+	  	   <id column="ACCOMM_REVIEW_ID" property="accommReviewId" />
+	       <result column="USER_ID" property="userId" />
+		   <result column="ACCOMM_ID" property="accommId" />
+		   <result column="ACCOMM_REVIEW_CONTENT" property="accommReviewContent" />
+		   <result column="ACCOMM_REVIEW_RATING" property="accommReviewRating" />
+		   <result column="ACCOMM_REVIEW_STATUS" property="accommReviewStatus" />
+		   <result column="ORDER_ID" property="orderId" />
+	  </resultMap>
+	  
+	  <!-- 숙소 후기 insert -->
+	  <insert id="reviewInsert" parameterType="com.sist.web.model.Review">
+		INSERT INTO T_ACCOMM_REVIEW (
+		    ACCOMM_REVIEW_ID,
+		    USER_ID,
+		    ACCOMM_ID,
+		    ACCOMM_REVIEW_CONTENT,
+		    ACCOMM_REVIEW_RATING,
+		    ORDER_ID
+		) VALUES ( REVIEW_SEQ.NEXTVAL,
+		           #{userId},
+		           #{accommId},
+		           #{accommReviewContent},
+		           #{accommReviewRating},
+		           #{orderId})
+	  </insert>
+	  
+	  <!-- 후기 썼었나 체크 -->
+	  <select id="reviewCount" parameterType="com.sist.web.model.Review" resultType="int">
+		SELECT
+		    COUNT(*)
+		FROM
+		    T_ACCOMM_REVIEW
+		WHERE
+		    USER_ID = #{userId}
+		AND
+		    ORDER_ID = #{orderId}
+	  </select>
+	  
+	  <!-- 나의 숙소 후기 리스트 -->
+	  <select id="reviewList" parameterType="String" resultMap="reviewResultMap">
+		SELECT *
+		FROM
+		    T_ACCOMM_REVIEW
+		WHERE
+		    USER_ID = #{userId}
+	  </select>
+	  
+	  <!-- 숙소 후기 리스트 -->
+	  <select id="reviewAccommList" parameterType="String" resultMap="reviewResultMap">
+		SELECT
+		    ACCOMM_REVIEW_ID,
+		    USER_ID,
+		    ACCOMM_ID,
+		    ACCOMM_REVIEW_CONTENT,
+		    ACCOMM_REVIEW_RATING,
+		    ORDER_ID
+		FROM
+		    T_ACCOMM_REVIEW
+		WHERE
+		    ACCOMM_ID = #{value}
+		AND
+			ACCOMM_REVIEW_STATUS = 'Y'
+	  </select>
+	  
+	  <!-- 숙소 별점 -->
+	  <select id="reviewRatingAvg" parameterType="String" resultType="double">
+		SELECT 
+		    AVG(ACCOMM_REVIEW_RATING) AS avg_rating
+		FROM 
+		    T_ACCOMM_REVIEW
+		WHERE 
+		    ACCOMM_ID = #{value}
+		AND
+			ACCOMM_REVIEW_STATUS = 'Y'
+	  </select>
+	  
+	  <!-- 숙소 후기 갯수 -->
+	  <select id="reviewAccommCount" parameterType="String" resultType="int">
+		SELECT 
+		    COUNT(*) AS review_count
+		FROM 
+		    T_ACCOMM_REVIEW
+		WHERE 
+		    ACCOMM_ID = #{value}
+		AND
+			ACCOMM_REVIEW_STATUS = 'Y'
+	  </select>
+	  
+	  <!-- 리뷰 삭제 -->
+	  <delete id="reviewDelete" parameterType="String">
+		DELETE FROM T_ACCOMM_REVIEW
+		WHERE
+		        ACCOMM_REVIEW_ID = #{value}
+	  </delete>
+	  
+	  <!-- 리뷰 셀렉트 -->
+	  <select id="reviewSelect" parameterType="String" resultMap="reviewResultMap">
+		SELECT
+		    ACCOMM_REVIEW_ID,
+		    USER_ID,
+		    ACCOMM_ID,
+		    ACCOMM_REVIEW_CONTENT,
+		    ACCOMM_REVIEW_RATING,
+		    ORDER_ID
+		FROM
+		    T_ACCOMM_REVIEW
+		WHERE
+		    ACCOMM_REVIEW_ID = #{value}
+	  </select>
+	  
+	  <!-- 리뷰 비활성화 -->
+	  <update id="reviewUpdate" parameterType="String">
+		UPDATE T_ACCOMM_REVIEW
+		SET
+		    ACCOMM_REVIEW_STATUS = 'N'
+		WHERE
+		        USER_ID = #{value}
+	  </update>
+	  
+	  <!-- 탈퇴하면서 별점 업데이트 쳐야하는 숙소 리스트 -->
+	  <select id="reviewUpdateList" parameterType="String" resultType="String">
+		SELECT
+		    DISTINCT ACCOMM_ID
+		FROM
+		    T_ACCOMM_REVIEW
+		WHERE
+		    USER_ID = #{userId}
+	  </select>
+</mapper>

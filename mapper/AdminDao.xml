@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.AdminDao">
+
+
+
+    <!-- resultMap 정의 -->
+    <resultMap id="adminResultMap" type="com.sist.web.model.Admin">
+        <result property="adminId" column="ADMIN_ID" />
+        <result property="adminPassword" column="ADMIN_PASSWORD" />
+        <result property="adminName" column="ADMIN_NAME" />
+    </resultMap>
+    
+    <resultMap id="sellerResultMap" type="com.sist.web.model.Seller">
+  	<id column="SELLER_ID"  	property="sellerId" />
+  	<result column="SELLER_NAME"  property="sellerName" />
+  	<result column="SELLER_NUMBER"  property="sellerNumber" />
+  	<result column="SELLER_PASSWORD"  property="sellerPassword" />
+  	<result column="SELLER_BUSINESS"  property="sellerBusiness" />
+  	<result column="SELLER_EMAIL"  property="sellerEmail" />
+  	<result column="SELLER_STATUS"   property="sellerStatus" />
+  	<result column="SELLER_REGDATE"  property="sellerRegdate" />
+  	<result column="SELLER_SELLNUMBER" property="sellerSellnumber" />
+	</resultMap>
+
+  <!-- User resultMap 정의 -->
+    <resultMap id="userResultMap" type="com.sist.web.model.User">
+    <id property="userId" column="USER_ID" />
+    <result property="userName" column="USER_NAME" />
+    <result property="userEmail" column="USER_EMAIL" />
+    <result property="userOut" column="USER_OUT" />
+    <result property="userRegdate" column="USER_REGDATE" />
+    <result property="userNumber" column="USER_NUMBER"	/>
+	</resultMap>
+	<!-- accomm resultmap 정의 -->
+	<resultMap id="accommResultMap" type="com.sist.web.model.Accommodation">
+    <id property="accomId" column="ACCOMM_ID"/>
+    <result property="regionId" column="REGION_ID"/>
+    <result property="sellerId" column="SELLER_ID"/>
+    <result property="accomStatus" column="ACCOMM_STATUS"/>
+    <result property="accomName" column="ACCOMM_NAME"/>
+    <result property="accomTel" column="ACCOMM_TEL"/>
+    <result property="accomAdd" column="ACCOMM_ADD"/>
+    <result property="accomLat" column="ACCOMM_LAT"/>
+    <result property="accomLon" column="ACCOMM_LON"/>
+    <result property="accomAvg" column="ACCOMM_AVG"/>
+    <result property="accomAdd2" column="ACCOMM_ADD2"/>
+    <result property="sigunguCode" column="SIGUNGU_CODE"/>
+    <result property="zipcode" column="ZIPCODE"/>
+    <result property="firstImage" column="FIRST_IMAGE"/>
+    <result property="firstImage2" column="FIRST_IMAGE2"/>
+    <result property="accomDes" column="ACCOMM_DES"/>
+    <result property="unifiedId" column="UNIFIED_ID"/>
+	</resultMap>
+    <!-- review resultMap 정의 -->
+	<resultMap id="editorResultMap" type="com.sist.web.model.Editor">
+	    <id      column="PLAN_ID"         property="planId"/>
+	    <result  column="USER_ID"         property="userId"/>
+	    <result  column="PLAN_TITLE"      property="planTitle"/>
+	    <result  column="PLAN_CONTENT"    property="planContent"/>
+	    <result  column="PLAN_REGDATE"    property="planRegdate"/>
+	    <result  column="PLAN_COUNT"      property="planCount"/>
+	    <result  column="PLAN_REPORT"     property="planReport"/>
+	    <result  column="PLAN_RECOMMEND"  property="planRecommend"/>
+	    <result  column="PLAN_STATUS"     property="planStatus"/>
+	    <result column="T_CALANDER_LIST_ID" property="tCalanderListId"/>
+	</resultMap>
+
+	<resultMap id="noticeResultMap" type="com.sist.web.model.Notice">
+    <id property="noticeId" column="NOTICE_ID" />
+    <result property="adminId" column="ADMIN_ID" />
+    <result property="noticeTitle" column="NOTICE_TITLE" />
+    <result property="noticeContent" column="NOTICE_CONTENT" />
+    <result property="noticeRegdate" column="NOTICE_REGDATE" />
+    <result property="noticeCount" column="NOTICE_COUNT" />
+	</resultMap>
+	
+	<resultMap id="eventResultMap" type="com.sist.web.model.Event">
+    <id     property="eventId"            column="EVENT_ID"/>
+    <result property="adminId"            column="ADMIN_ID"/>
+    <result property="eventTitle"         column="EVENT_TITLE"/>
+    <result property="eventContent"       column="EVENT_CONTENT"/>
+    <result property="eventRegdate"       column="EVENT_REGDATE"/>
+    <result property="eventCount"         column="EVENT_COUNT"/>
+    <result property="couponId"           column="COUPON_ID"/>
+    <result property="eventThumbnailUrl"  column="EVENT_THUMBNAIL_URL"/>
+    <result property="eventEnddate"       column="EVENT_ENDDATE"/>
+    <result property="eventImageUrl"      column="EVENT_IMAGE_URL"/>
+</resultMap>
+
+
+	<resultMap id="couponResultMap" type="com.sist.web.model.Coupon">
+    <id     property="couponId"        column="COUPON_ID"/>
+    <result property="couponName"      column="COUPON_NAME"/>
+    <result property="couponType"      column="COUPON_TYPE"/>
+    <result property="couponAmount"    column="COUPON_AMOUNT"/>
+    <result property="couponCreatedate" column="COUPON_CREATEDATE"/>
+    <result property="couponExpiredate" column="COUPON_EXPIREDATE"/>
+    <result property="couponMaxAmount"  column="COUPON_MAX_AMOUNT"/>
+    <result property="couponCount"      column="COUPON_COUNT"/>
+</resultMap>
+	
+	    <!-- 관리자 조회 -->
+    <select id="selectAdminById" parameterType="string" resultMap="adminResultMap">
+        SELECT *
+        FROM T_ADMIN
+        WHERE ADMIN_ID = #{adminId}
+    </select>
+    
+    <select id="getAllUsers" resultMap="userResultMap">
+    SELECT 
+        USER_ID,
+        USER_NAME,
+        USER_EMAIL,
+        USER_NUMBER,
+        USER_OUT,
+        USER_REGDATE
+    FROM T_USER
+    ORDER BY USER_REGDATE DESC
+</select>
+
+    <!-- 유저 상태 변경 -->
+    <update id="updateUserStatus">
+    UPDATE T_USER
+    SET USER_OUT = #{status}
+    WHERE USER_ID = #{userId}
+	</update>
+    
+	
+	
+	  	<!-- 아래 yw가 추가 -->
+	<select id="sellerList" resultMap="sellerResultMap">
+	    SELECT *
+	    FROM T_SELLER
+	    ORDER BY SELLER_REGDATE DESC
+	</select>
+	
+	<update id="approveSeller" parameterType="String">
+	    UPDATE T_SELLER
+	    SET SELLER_STATUS = 'Y'
+	    WHERE SELLER_ID = #{value}
+	</update>
+	
+	<!-- 전체 카운트 
+	<select id="getSellerCount" resultType="int" parameterType="string">
+	  SELECT COUNT(*) FROM T_SELLER
+	  <where>
+	    <if test="keyword != null and keyword != ''">
+	      AND SELLER_ID LIKE '%' || #{keyword} || '%'
+	    </if>
+	  </where>
+	</select>
+	-->
+	<!-- 페이징 리스트 
+	<select id="getSellerList" resultMap="sellerResultMap" parameterType="map">
+	  SELECT * FROM (
+	    SELECT A.*, ROWNUM AS RNUM
+	    FROM (
+	      SELECT * FROM T_SELLER
+	      <where>
+	        <if test="keyword != null and keyword != ''">
+	          AND SELLER_ID LIKE '%' || #{keyword} || '%'
+	        </if>
+	      </where>
+	      ORDER BY SELLER_REGDATE DESC
+	    ) A
+	    WHERE ROWNUM &lt;= #{offset} + #{pageSize}
+	  )
+	  WHERE RNUM &gt; #{offset}
+	</select>
+	  -->
+	 <update id="updateSellerStatus" parameterType="map">
+	    UPDATE T_SELLER
+	    SET SELLER_STATUS = #{status}
+	    WHERE SELLER_ID = #{sellerId}
+	</update>
+	
+	<select id="searchUsersById" resultMap="userResultMap" parameterType="string">
+    SELECT * 
+    FROM T_USER 
+    WHERE USER_ID LIKE '%' || #{keyword} || '%'
+    ORDER BY USER_REGDATE DESC
+	</select>
+	  
+	  <!-- 여기까지가 어드민에서호출 yw -->
+	  
+	  <select id="getUserCount" parameterType="map" resultType="int">
+    SELECT COUNT(*) FROM T_USER
+    <where>
+        <if test="keyword != null and keyword != ''">
+            USER_ID LIKE '%' || #{keyword} || '%'
+        </if>
+    </where>
+</select>
+
+<select id="getUsersWithPaging" parameterType="map" resultMap="userResultMap">
+    SELECT * FROM (
+        SELECT inner_result.*, ROWNUM AS rnum FROM (
+            SELECT * FROM T_USER
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    USER_ID LIKE '%' || #{keyword} || '%'
+                </if>
+            </where>
+            ORDER BY USER_REGDATE DESC
+        ) inner_result
+        WHERE ROWNUM &lt;= #{endRow}
+    )
+    WHERE rnum &gt;= #{startRow}
+</select>
+
+ <select id="getSellerList" parameterType="map" resultMap="sellerResultMap">
+        SELECT *
+        FROM (
+            SELECT a.*, ROWNUM AS rn
+            FROM (
+                SELECT *
+                FROM T_SELLER
+                <where>
+                    <if test="keyword != null and keyword != ''">
+                        AND SELLER_ID LIKE '%' || #{keyword} || '%'
+                    </if>
+                </where>
+                ORDER BY SELLER_REGDATE DESC
+            ) a
+            WHERE ROWNUM &lt;= #{end}
+        )
+        WHERE rn &gt;= #{start}
+    </select>
+
+    <!-- 판매자 총 수 -->
+    <select id="getSellerCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM T_SELLER
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND SELLER_ID LIKE '%' || #{keyword} || '%'
+            </if>
+        </where>
+    </select>
+    
+        <!-- 숙소 리스트 조회 -->
+    <select id="getAccommList" resultMap="accommResultMap" parameterType="map">
+    SELECT *
+    FROM (
+        SELECT a.*, ROWNUM AS rn
+        FROM (
+            SELECT *
+            FROM T_ACCOMM
+            WHERE 1=1
+            <if test="keyword != null and keyword != ''">
+                AND SELLER_ID LIKE '%' || #{keyword} || '%'
+            </if>
+            <if test="status != null and status != ''">
+                AND ACCOMM_STATUS = #{status}
+            </if>
+            ORDER BY ACCOMM_ID DESC  <!-- ✅ 기존 ACCOMM_REGDATE → ACCOMM_ID로 변경 -->
+        ) a
+        WHERE ROWNUM &lt;= #{end}
+    )
+    WHERE rn &gt;= #{start}
+</select>
+
+    <!-- 숙소 총 개수 -->
+    <select id="getAccommCount" resultType="int" parameterType="map">
+        SELECT COUNT(*)
+        FROM T_ACCOMM
+        WHERE 1=1
+          <if test="keyword != null and keyword != ''">
+              AND SELLER_ID LIKE '%' || #{keyword} || '%'
+          </if>
+          <if test="status != null and status != ''">
+              AND ACCOMM_STATUS = #{status}
+          </if>
+    </select>
+
+    <!-- 숙소 승인 처리 -->
+    <update id="approveAccomm" parameterType="string">
+        UPDATE T_ACCOMM
+        SET ACCOMM_STATUS = 'Y'
+        WHERE ACCOMM_ID = #{accomId}
+    </update>
+	
+	<!-- =============== 리뷰 총 개수 =============== -->
+<select id="getReviewCount" parameterType="map" resultType="int">
+SELECT COUNT(*)
+FROM   T_PLAN
+WHERE 1=1
+<if test="status != null and status != ''">
+    AND PLAN_STATUS = #{status}
+</if>
+<if test="keyword != null and keyword != ''">
+    AND USER_ID LIKE '%' || #{keyword} || '%'
+</if>
+</select>
+
+	<!-- =============== 리뷰 리스트(페이징) =============== -->
+	<select id="getReviewList" resultMap="editorResultMap" parameterType="map">
+SELECT *
+FROM (
+    SELECT R.*, ROWNUM AS RN
+    FROM (
+        SELECT PLAN_ID, USER_ID, PLAN_TITLE, PLAN_CONTENT,
+               TO_CHAR(PLAN_REGDATE, 'YYYY-MM-DD') PLAN_REGDATE,
+               PLAN_COUNT, PLAN_REPORT, PLAN_RECOMMEND,
+               PLAN_STATUS,
+                T_CALANDER_LIST_ID AS T_CALANDER_LIST_ID   <!-- ✅ 명시적 별칭 지정 -->
+        FROM   T_PLAN
+        WHERE 1=1
+        <if test="status != null and status != ''">
+            AND PLAN_STATUS = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND USER_ID LIKE '%' || #{keyword} || '%'
+        </if>
+        <choose>
+            <when test="order == 'report'">
+                ORDER BY PLAN_REPORT DESC, PLAN_ID DESC
+            </when>
+            <when test="order == 'view'">
+                ORDER BY PLAN_COUNT DESC, PLAN_ID DESC
+            </when>
+            <otherwise>
+                ORDER BY PLAN_ID DESC
+            </otherwise>
+        </choose>
+    ) R
+    WHERE ROWNUM &lt;= #{end}
+)
+WHERE RN &gt;= #{start}
+</select>
+	
+	<update id="updateReviewStatus" parameterType="map">
+    UPDATE T_PLAN
+    SET PLAN_STATUS = #{status}
+    WHERE PLAN_ID = #{planId}
+	</update>
+	
+	<select id="searchNoticeList" parameterType="map" resultMap="noticeResultMap">
+    SELECT *
+    FROM (
+        SELECT T.*, ROWNUM RNUM
+        FROM (
+            SELECT *
+            FROM T_NOTICE
+            <where>
+                <if test="keyword != null and keyword != ''">
+                    AND NOTICE_TITLE LIKE '%' || #{keyword} || '%'
+                </if>
+            </where>
+            ORDER BY NOTICE_REGDATE DESC
+        ) T
+        WHERE ROWNUM &lt;= #{startRow} + #{pageSize}
+    )
+    WHERE RNUM &gt; #{startRow}
+	</select>
+	
+	<select id="getSearchNoticeCount" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM T_NOTICE
+    <where>
+        <if test="keyword != null and keyword != ''">
+            AND NOTICE_TITLE LIKE '%' || #{keyword} || '%'
+        </if>
+    </where>
+	</select>
+	
+	<insert id="insertNotice" parameterType="map">
+    INSERT INTO T_NOTICE (
+        NOTICE_ID,
+        NOTICE_TITLE,
+        NOTICE_CONTENT,
+        NOTICE_COUNT,
+        NOTICE_REGDATE
+    ) VALUES (
+        'NTC'||LPAD(SEQ_NOTICE.NEXTVAL, 3, '0'),
+        #{noticeTitle},
+        #{noticeContent},
+        0,
+        SYSDATE
+    )
+</insert>
+
+<select id="getNoticeById" parameterType="String" resultMap="noticeResultMap">
+    SELECT * FROM T_NOTICE WHERE NOTICE_ID = #{noticeId}
+</select>	
+	
+<update id="updateNotice" parameterType="com.sist.web.model.Notice">
+    UPDATE T_NOTICE
+    SET 
+        NOTICE_TITLE = #{noticeTitle},
+        NOTICE_CONTENT = #{noticeContent}
+    WHERE NOTICE_ID = #{noticeId}
+</update>
+	
+<select id="selectNoticeById" parameterType="String" resultMap="noticeResultMap">
+    SELECT NOTICE_ID, NOTICE_TITLE, NOTICE_CONTENT, NOTICE_REGDATE, NOTICE_COUNT
+    FROM T_NOTICE
+    WHERE NOTICE_ID = #{noticeId}
+</select>	
+
+<delete id="deleteNoticeById" parameterType="String">
+    DELETE FROM T_NOTICE WHERE NOTICE_ID = #{noticeId}
+</delete>
+
+
+<!-- Event 목록 검색 -->
+<select id="searchEventList" resultMap="eventResultMap">
+    SELECT *
+    FROM (
+        SELECT ROWNUM AS RN, A.*
+        FROM (
+            SELECT *
+            FROM T_EVENT
+            WHERE 1 = 1
+            <if test="keyword != null and keyword != ''">
+                AND EVENT_TITLE LIKE '%' || #{keyword} || '%'
+            </if>
+            <if test="status == 'active'">
+                AND EVENT_ENDDATE &gt;= SYSDATE
+            </if>
+            <if test="status == 'closed'">
+                AND EVENT_ENDDATE &lt; SYSDATE
+            </if>
+            ORDER BY EVENT_REGDATE DESC
+        ) A
+        WHERE ROWNUM &lt;= #{startRow} + #{pageSize}
+    )
+    WHERE RN &gt; #{startRow}
+</select>
+
+<!-- 검색된 Event 수 -->
+<select id="getSearchEventCount" resultType="int">
+    SELECT COUNT(*)
+    FROM T_EVENT
+    WHERE 1 = 1
+    <if test="keyword != null and keyword != ''">
+        AND EVENT_TITLE LIKE '%' || #{keyword} || '%'
+    </if>
+    <if test="status == 'active'">
+        AND EVENT_ENDDATE &gt;= SYSDATE
+    </if>
+    <if test="status == 'closed'">
+        AND EVENT_ENDDATE &lt; SYSDATE
+    </if>
+</select>
+
+<!-- 이벤트 등록 -->
+
+
+<!-- 이벤트 단건 조회 -->
+<select id="getEventById" resultMap="eventResultMap">
+    SELECT *
+    FROM T_EVENT
+    WHERE EVENT_ID = #{eventId}
+</select>
+
+<!-- 이벤트 수정 -->
+<update id="updateEvent" parameterType="com.sist.web.model.Event">
+    UPDATE T_EVENT
+    SET EVENT_TITLE = #{eventTitle},
+        EVENT_CONTENT = #{eventContent},
+        COUPON_ID = #{couponId},
+        EVENT_THUMBNAIL_URL = #{eventThumbnailUrl},
+        EVENT_ENDDATE = #{eventEnddate},
+        EVENT_IMAGE_URL = #{eventImageUrl}
+    WHERE EVENT_ID = #{eventId}
+</update>
+
+<!-- 이벤트 삭제 -->
+<delete id="deleteEvent">
+    DELETE FROM T_EVENT
+    WHERE EVENT_ID = #{eventId}
+</delete>
+
+<!-- 모든 쿠폰 조회 -->
+<select id="getAllCoupons" resultMap="couponResultMap">
+    SELECT *
+    FROM T_COUPON
+    ORDER BY COUPON_CREATEDATE DESC
+</select>
+
+<!-- 쿠폰 단건 조회 -->
+<select id="getCouponById" resultMap="couponResultMap">
+    SELECT *
+    FROM T_COUPON
+    WHERE COUPON_ID = #{couponId}
+</select>
+
+<!-- AdminDao.xml -->
+<select id="getNextEventSeq" resultType="int">
+    SELECT EVT_SEQ.NEXTVAL FROM DUAL
+</select>
+
+<insert id="insertEvent" parameterType="com.sist.web.model.Event">
+    INSERT INTO T_EVENT (
+        EVENT_ID, EVENT_TITLE, EVENT_CONTENT, EVENT_ENDDATE, COUPON_ID,
+        EVENT_THUMBNAIL_URL, EVENT_IMAGE_URL, EVENT_REGDATE, EVENT_COUNT
+    )
+    VALUES (
+        #{eventId}, #{eventTitle}, '', #{eventEnddate}, #{couponId},
+        #{eventThumbnailUrl}, #{eventImageUrl}, SYSDATE, 0
+    )
+</insert>
+
+</mapper>

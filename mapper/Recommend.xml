@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.RecommendDao">
+	  <resultMap type="com.sist.web.model.Recommend" id="recommendResultMap">
+	       <result column="USER_ID" property="userId" />
+		   <result column="PLAN_ID" property="planId" />
+	  </resultMap>
+	  
+	  <!-- 좋아요를 눌렀나 조회해줘요 -->
+	  <select id="recommendInquiry" parameterType="com.sist.web.model.Recommend" resultType="int">
+		  SELECT COUNT(*) AS TOTAL_CNT
+			FROM T_RECOMMEND
+			WHERE PLAN_ID = #{planId}
+			AND USER_ID = #{userId}
+	  </select>
+	  
+	  <!-- 좋아요 insert -->
+	  <insert id="recommendInsert" parameterType="com.sist.web.model.Recommend">
+	  	INSERT INTO T_RECOMMEND VALUES(#{userId}, #{planId})
+	  </insert>
+	  
+	  <!-- 좋아요 delete -->
+	  <delete id="recommendDelete" parameterType="com.sist.web.model.Recommend">
+	  	DELETE T_RECOMMEND
+		 WHERE USER_ID = #{userId}
+		   AND PLAN_ID = #{planId}
+	  </delete>
+	  
+	  <!-- 유저가 좋아요 한 게시글 조회 -->
+	  <select id="recommendList" parameterType="String" resultType="int">
+		  SELECT
+			    PLAN_ID
+			FROM
+			    T_RECOMMEND
+			WHERE
+			    USER_ID = #{value}
+	  </select>
+	  
+</mapper>

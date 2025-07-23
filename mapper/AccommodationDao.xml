@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sist.web.dao.AccommodationDao">
+
+    <resultMap id="accomResultMap" type="com.sist.web.model.Accommodation">
+        <id column="ACCOMM_ID" property="accomId"/>
+        <result column="REGION_ID" property="regionId"/>
+        <result column="SIGUNGU_CODE" property="sigunguCode"/>
+        <result column="ZIPCODE" property="zipcode"/>
+        <result column="SELLER_ID" property="sellerId"/>
+        <result column="ACCOMM_STATUS" property="accomStatus"/>
+        <result column="ACCOMM_NAME" property="accomName"/>
+        <result column="ACCOMM_TEL" property="accomTel"/>
+        <result column="ACCOMM_ADD" property="accomAdd"/>
+        <result column="ACCOMM_ADD2" property="accomAdd2"/>
+        <result column="ACCOMM_DES" property="accomDes"/>
+        <result column="ACCOMM_LAT" property="accomLat"/>
+        <result column="ACCOMM_LON" property="accomLon"/>
+        <result column="FIRST_IMAGE" property="firstImage"/>
+        <result column="FIRST_IMAGE2" property="firstImage2"/>
+        <result column="ACCOMM_AVG" property="accomAvg"/>
+    </resultMap>
+
+    <insert id="insertAccommodation" parameterType="com.sist.web.model.Accommodation">
+	    INSERT INTO T_ACCOMM (
+	        ACCOMM_ID, UNIFIED_ID, REGION_ID, SIGUNGU_CODE, ZIPCODE, SELLER_ID, ACCOMM_STATUS,
+	        ACCOMM_NAME, ACCOMM_TEL, ACCOMM_ADD, ACCOMM_ADD2, ACCOMM_DES,
+	        ACCOMM_LAT, ACCOMM_LON, FIRST_IMAGE, FIRST_IMAGE2, ACCOMM_AVG
+	    )
+	    SELECT 
+	        #{accomId}, 
+	        CONCAT('A_', TO_CHAR(ACCOMM_SEQ.NEXTVAL)), 
+	        #{regionId}, #{sigunguCode}, #{zipcode}, #{sellerId}, #{accomStatus},
+	        #{accomName}, #{accomTel}, #{accomAdd}, #{accomAdd2}, #{accomDes, jdbcType=CLOB},
+	        #{accomLat}, #{accomLon}, #{firstImage}, #{firstImage2}, #{accomAvg}
+	    FROM dual
+	    WHERE NOT EXISTS (
+	        SELECT 1 FROM T_ACCOMM WHERE ACCOMM_ID = #{accomId}
+	    )
+	</insert>
+	<!-- 모든 숙소 가져오기 -->
+    <select id="getAllAccommodations" resultMap="accomResultMap">
+        SELECT * FROM T_ACCOMM
+    </select>
+    
+	<select id="existsAccommodation" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM T_ACCOMM WHERE ACCOMM_ID = #{accomId}
+	</select>
+
+	<update id="updateAccommodationDescription">
+		UPDATE T_ACCOMM SET ACCOMM_DES = #{accomDes} WHERE ACCOMM_ID = #{accomId}
+	</update>
+	
+	<!-- 여기부터 기능구현(이전까진 API관련) -->
+	
+	<!-- 상세정보띄울떄 객체 가져오는용도(/list/view와 같음) -->
+	<select id = "selectAccommodation" parameterType = "String" resultMap="accomResultMap">
+		SELECT * FROM T_ACCOMM
+		WHERE ACCOMM_ID = #{accomId}
+	</select>
+	
+
+
+	
+   <!-- 🔥 새로운 폼 등록용 insert 쿼리 -->
+    <insert id="insertAccommodationForm" parameterType="com.sist.web.model.Accommodation">
+        <selectKey keyProperty="accomId" resultType="String" order="BEFORE">
+    		SELECT TO_CHAR(ACCOMM_SEQ.NEXTVAL) FROM DUAL
+        </selectKey>
+        INSERT INTO T_ACCOMM (
+            ACCOMM_ID, UNIFIED_ID, REGION_ID, SIGUNGU_CODE, ZIPCODE, SELLER_ID, ACCOMM_STATUS,
+            ACCOMM_NAME, ACCOMM_TEL, ACCOMM_ADD, ACCOMM_ADD2, ACCOMM_DES,
+            ACCOMM_LAT, ACCOMM_LON, FIRST_IMAGE, FIRST_IMAGE2, ACCOMM_AVG
+        )
+        VALUES (
+            #{accomId},
+            CONCAT('A_', #{accomId}),
+            #{regionId}, #{sigunguCode}, #{zipcode}, #{sellerId}, #{accomStatus},
+            #{accomName}, #{accomTel}, #{accomAdd}, #{accomAdd2}, #{accomDes, jdbcType=CLOB},
+            #{accomLat}, #{accomLon}, #{firstImage}, #{firstImage2}, #{accomAvg}
+        )
+    </insert>
+    <select id="findBySellerId" parameterType="string" resultMap="accomResultMap">
+    SELECT * FROM T_ACCOMM
+    WHERE SELLER_ID = #{sellerId}
+    ORDER BY ACCOMM_ID DESC
+</select>
+    
+    <!-- 별점 값 세팅해주기 -->
+    <update id="accommRateAverage" parameterType="com.sist.web.model.Accommodation">
+		UPDATE T_ACCOMM
+		SET
+		    ACCOMM_AVG = #{accomAvg}
+		WHERE
+		        ACCOMM_ID = #{accomId}
+    </update>
+   
+    <select id="getAccommodationCount" resultType="int" parameterType="map">
+	  SELECT COUNT(*) FROM T_ACCOMM
+	  <where>
+	    <if test="list != null and !list.isEmpty()">
+	      <foreach collection="list" item="sigungu" separator="OR" open="(" close=")">
+	        <choose>
+	          <when test="sigungu.sigunguId == null or sigungu.sigunguId == ''">
+	            REGION_ID = #{sigungu.regionId}
+	          </when>
+	          <otherwise>
+	            (REGION_ID = #{sigungu.regionId} AND SIGUNGU_CODE = #{sigungu.sigunguId})
+	          </otherwise>
+	        </choose>
+	      </foreach>
+	    </if>
+	    <if test="keyword != null and keyword != ''">
+		  AND ACCOMM_NAME LIKE '%' || #{keyword} || '%'
+		</if>
+	  </where>
+	</select>
+	 
+	
+<select id="searchBySigungu" resultMap="accomResultMap" parameterType="map">
+	  SELECT * FROM (
+	    SELECT a.*, ROWNUM rnum FROM (
+	      SELECT * FROM T_ACCOMM
+	      <where>
+	      ACCOMM_STATUS = 'Y'
+	        <if test="list != null and !list.isEmpty()">
+	          AND (
+	          <foreach collection="list" item="sigungu" separator="OR" open="(" close=")">
+	            <choose>
+	              <when test="sigungu.sigunguId == null or sigungu.sigunguId == ''">
+	                REGION_ID = #{sigungu.regionId}
+	              </when>
+	              <otherwise>
+	                (REGION_ID = #{sigungu.regionId} AND SIGUNGU_CODE = #{sigungu.sigunguId})
+	              </otherwise>
+	            </choose>
+	          </foreach>
+	           )
+	        </if>
+	        <if test="keyword != null and keyword != ''">
+			  AND ACCOMM_NAME LIKE '%' || #{keyword} || '%'
+			</if>
+	      </where>
+	      ORDER BY ACCOMM_ID DESC
+	    ) a
+	    WHERE ROWNUM <![CDATA[ <= ]]> #{end}
+	  )
+	  WHERE rnum <![CDATA[ > ]]> #{start}
+	</select>
+</mapper>

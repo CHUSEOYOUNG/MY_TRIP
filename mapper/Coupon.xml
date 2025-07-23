@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.CouponDao">
+
+    <!-- resultMap -->
+    <resultMap id="couponResultMap" type="com.sist.web.model.Coupon">
+        <id column="COUPON_ID" property="couponId"/>
+        <result column="COUPON_NAME" property="couponName"/>
+        <result column="COUPON_TYPE" property="couponType"/>
+        <result column="COUPON_AMOUNT" property="couponAmount"/>
+        <result column="COUPON_CREATEDATE" property="couponCreatedate"/>
+        <result column="COUPON_EXPIREDATE" property="couponExpiredate"/>
+        <result column="COUPON_PLACE" property="couponPlace"/>
+        <result column="COUPON_COUNT" property="couponCount"/>
+        <result column="COUPON_MAX_AMOUNT" property="couponMaxAmount"/>
+    </resultMap>
+
+    <!-- 쿠폰 상세 조회 -->
+    <select id="selectCouponById" resultMap="couponResultMap" parameterType="string">
+        SELECT *
+        FROM T_COUPON
+        WHERE COUPON_ID = #{couponId}
+    </select>
+
+    <!-- 수량 차감 -->
+    <update id="decreaseCouponCount" parameterType="string">
+        UPDATE T_COUPON
+        SET COUPON_COUNT = COUPON_COUNT - 1
+        WHERE COUPON_ID = #{couponId}
+    </update>
+
+</mapper>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sist.web.dao.RegionDao">
+
+    <resultMap id="regionResultMap" type="com.sist.web.model.Region">
+        <id column="REGION_ID" property="regionId"/>
+        <result column="REGION_NAME" property="regionName"/>
+        <result column="REGION_LAT" property="regionLat"/>
+        <result column="REGION_LON" property="regionLon"/>
+    </resultMap>
+
+    <insert id="insertRegion" parameterType="com.sist.web.model.Region">
+        INSERT INTO T_REGION (REGION_ID, REGION_NAME, REGION_LAT, REGION_LON)
+        SELECT #{regionId}, #{regionName}, #{regionLat}, #{regionLon} FROM dual
+        WHERE NOT EXISTS (
+            SELECT 1 FROM T_REGION WHERE REGION_ID = #{regionId}
+        )
+    </insert>
+	
+	<!-- Region 객체들 가져오기 (시/도) -->
+    <select id="getAllRegions" resultMap="regionResultMap">
+        SELECT * FROM T_REGION
+    </select>
+
+    <select id="existsRegion" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM T_REGION WHERE REGION_ID = #{regionId}
+    </select>
+    
+    
+    <select id="regionSelect" resultMap="regionResultMap">
+        SELECT REGION_ID FROM T_REGION 
+        WHERE REGION_NAME like  '%' || #{regionName} || '%'
+    </select>
+
+</mapper>

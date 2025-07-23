@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.EditorDao">
+	<!-- 게시판 리스트 resultMap -->
+	  <resultMap type="com.sist.web.model.Editor" id="editorResultMap">
+	  	   <id column="PLAN_ID" property="planId" />
+	       <result column="USER_ID" property="userId" />
+		   <result column="PLAN_TITLE" property="planTitle" />
+	       <result column="PLAN_CONTENT" property="planContent" />
+	       <result column="PLAN_REGDATE" property="planRegdate" />
+	       <result column="PLAN_COUNT" property="planCount" />
+	       <result column="PLAN_REPORT" property="planReport" />
+	       <result column="PLAN_RECOMMEND" property="planRecommend" />
+	       <result column="T_CALANDER_LIST_ID" property="tCalanderListId" />
+	       <result column="PLAN_STATUS" property="planStatus" />
+	  </resultMap>
+	  
+	  <!-- 게시글 등록 -->
+	  <insert id="editorInsert" parameterType="com.sist.web.model.Editor">
+
+		INSERT INTO T_PLAN (PLAN_ID,
+		USER_ID,
+		PLAN_TITLE,
+		PLAN_CONTENT,
+		PLAN_REGDATE,
+		PLAN_COUNT,
+		PLAN_REPORT,
+		PLAN_RECOMMEND,
+		T_CALANDER_LIST_ID,
+		PLAN_STATUS)
+		VALUES (PLAN_SEQ.NEXTVAL,
+		#{userId},
+		#{planTitle},
+		#{planContent},
+		SYSDATE,
+		0,
+		0,
+		0,
+		#{tCalanderListId},
+		'Y')
+
+	  </insert>
+	  
+	  <!-- 게시글 갯수 조회 (조건포함) -->
+		<select id="editorListCount" parameterType="com.sist.web.model.Editor" resultType="int">
+		  
+		  SELECT COUNT(*)
+		    FROM T_PLAN A
+		    JOIN T_USER B
+		      ON A.USER_ID = B.USER_ID
+		  <where>
+		   PLAN_STATUS = 'Y'
+		  	<if test='searchType != null and searchType != "" and searchValue != null and searchValue !=""'>
+		  	<choose>
+			    <when test='searchType == "1"'>
+			      AND B.USER_NAME LIKE '%' || #{searchValue} || '%'
+			    </when>
+			    <when test='searchType == "2"'>
+			      AND A.PLAN_TITLE LIKE '%' || #{searchValue} || '%'
+			    </when>
+			    <when test='searchType == "3"'>
+			      AND DBMS_LOB.INSTR(A.PLAN_CONTENT, #{searchValue}) &gt; 0
+			    </when>
+		    </choose>
+		    </if>
+		  </where>
+		  
+		</select>
+
+	  
+	  <!-- 게시글 전체 리스트 (조건포함) -->
+	  <select id="editorList" parameterType="com.sist.web.model.Editor" resultMap="editorResultMap">
+	  
+		    SELECT
+		    A.PLAN_ID PLAN_ID,
+		    A.USER_ID USER_ID,
+		    A.PLAN_TITLE PLAN_TITLE,
+		    A.PLAN_CONTENT PLAN_CONTENT,
+		    TO_CHAR(A.PLAN_REGDATE, 'YYYY.MM.DD HH24:MI:SS') PLAN_REGDATE,
+		    A.PLAN_COUNT PLAN_COUNT,
+		    A.PLAN_REPORT PLAN_REPORT,
+		    A.PLAN_RECOMMEND PLAN_RECOMMEND,
+		    A.T_CALANDER_LIST_ID T_CALANDER_LIST_ID
+		  FROM T_PLAN A
+		  JOIN T_USER B
+		    ON A.USER_ID = B.USER_ID
+		
+		  <!-- searchType 1: 이름으로 검색 -->
+		  <!-- searchType 2: 제목으로 검색 -->
+		  <!-- searchType 3: 내용으로 검색 -->
+		  <where>
+		 A.PLAN_STATUS = 'Y'
+		  	<if test='searchType != null and searchType != "" and searchValue != null and searchValue !=""'>
+		  	<choose>
+			    <when test='searchType == "1"'>
+			      AND B.USER_NAME LIKE '%' || #{searchValue} || '%'
+			    </when>
+			    <when test='searchType == "2"'>
+			      AND A.PLAN_TITLE LIKE '%' || #{searchValue} || '%'
+			    </when>
+			    <when test='searchType == "3"'>
+			      AND DBMS_LOB.INSTR(A.PLAN_CONTENT, #{searchValue}) &gt; 0
+			    </when>
+		    </choose>
+		    </if>
+		  </where>
+		
+		  <!-- listType 1: 최신순(기본) -->
+		  <!-- listType 2: 추천순 -->
+		  <!-- listType 3: 조회수순 -->
+		  <choose>
+		    <when test='listType == "1"'>
+		      ORDER BY A.PLAN_REGDATE DESC
+		    </when>
+		    <when test='listType == "2"'>
+		      ORDER BY A.PLAN_RECOMMEND DESC, A.PLAN_COUNT DESC
+		    </when>
+		    <when test='listType == "3"'>
+		      ORDER BY A.PLAN_COUNT DESC, A.PLAN_RECOMMEND DESC
+		    </when>
+		    <otherwise>
+		      <!-- 최신순(기본) -->
+		      ORDER BY A.PLAN_REGDATE DESC
+		    </otherwise>
+		  </choose>
+	  
+	  </select>
+	  
+		<!-- 게시글 상세 조회 -->
+		<select id="editorSelect" parameterType="int" resultMap="editorResultMap">
+			SELECT
+			    A.PLAN_ID,
+			    A.USER_ID,
+			    A.PLAN_TITLE,
+			    A.PLAN_CONTENT,
+			    A.PLAN_REGDATE,
+			    A.PLAN_COUNT,
+			    A.PLAN_REPORT,
+			    A.PLAN_RECOMMEND,
+			    A.T_CALANDER_LIST_ID
+			FROM
+			    T_PLAN A
+			  JOIN
+			    T_USER B
+			    ON A.USER_ID = B.USER_ID
+			WHERE
+			A.PLAN_ID = #{value}
+			AND A.PLAN_STATUS = 'Y'
+		</select>
+	  
+		<!-- 게시물 수정 -->
+		<update id="editorUpdate" parameterType="com.sist.web.model.Editor">
+			UPDATE T_PLAN
+			   SET PLAN_TITLE = #{planTitle},
+			       PLAN_CONTENT = #{planContent}
+			 WHERE PLAN_ID = #{planId}
+		</update>
+		
+		<!-- 게시물 삭제 -->
+		<delete id="editorDelete" parameterType="int">
+			DELETE T_PLAN
+			WHERE PLAN_ID = #{value}
+		</delete>
+	  
+	  <!-- 게시물 썸네일 -->
+	  <select id="editorThumbnail" parameterType="int" resultType="String">
+	  SELECT REGEXP_SUBSTR(PLAN_CONTENT, <![CDATA['<img[^>]*>']]>, 1, 1) AS FIRST_IMG_TAG
+	    FROM T_PLAN
+	   WHERE PLAN_ID = #{value}
+	  </select>
+	  
+	  <!-- 조회수 증가 -->
+	  <update id="editorCountUpdate" parameterType="int">
+		UPDATE T_PLAN
+		SET PLAN_COUNT = PLAN_COUNT + 1
+		WHERE PLAN_ID = #{value}
+	  </update>
+	  
+	  <!-- 좋아요 증가 -->
+	  <update id="editorLikeIncre"  parameterType="int">
+		UPDATE T_PLAN
+		SET PLAN_RECOMMEND = PLAN_RECOMMEND + 1
+		WHERE PLAN_ID = #{value}
+	  </update>
+	  
+	  <!-- 좋아요 감소 -->
+	  <update id="editorLikeDecre"  parameterType="int">
+		UPDATE T_PLAN
+		SET PLAN_RECOMMEND = PLAN_RECOMMEND - 1
+		WHERE PLAN_ID = #{value}
+	  </update>
+	  
+	  <!-- 일정에 대한 후기가 있는지 체크 -->
+	  <select id="editorScheduleChk" parameterType="com.sist.web.model.Editor" resultType="int">
+		SELECT COUNT(*) AS CNT
+		FROM T_PLAN
+		WHERE USER_ID = #{userId}
+		AND T_CALANDER_LIST_ID = #{tCalanderListId}
+	  </select>
+	  
+	  <!-- 캘린더아이디로 플랜아이디 조회 -->
+	  <select id="editorPlanId" parameterType="com.sist.web.model.Editor" resultType="int">
+		SELECT PLAN_ID
+		FROM T_PLAN
+		WHERE USER_ID = #{userId}
+		AND T_CALANDER_LIST_ID = #{tCalanderListId}
+	  </select>
+	  
+	  <!-- 내가 쓴 게시글 조회 -->
+	  <select id="editorMyplan" parameterType="String" resultMap="editorResultMap">
+		  SELECT
+			    PLAN_ID,
+			    USER_ID,
+			    PLAN_TITLE,
+			    PLAN_CONTENT,
+			    PLAN_REGDATE,
+			    PLAN_COUNT,
+			    PLAN_REPORT,
+			    PLAN_RECOMMEND,
+			    T_CALANDER_LIST_ID
+			FROM
+			    T_PLAN
+			WHERE
+			    USER_ID = #{value}
+			ORDER BY PLAN_REGDATE DESC
+	  </select>
+	  
+	  	<!-- 게시글 베스트 리뷰 -->
+		<select id="getBestReviews" resultMap="editorResultMap">
+		  SELECT
+		    PLAN_ID,
+		    USER_ID,
+		    PLAN_TITLE,
+		    PLAN_CONTENT,
+		    PLAN_REGDATE,
+		    PLAN_COUNT,
+		    PLAN_REPORT,
+		    PLAN_RECOMMEND,
+		    T_CALANDER_LIST_ID
+		  FROM (
+		    SELECT *
+		    FROM T_PLAN
+		    WHERE PLAN_STATUS = 'Y'
+		    ORDER BY PLAN_RECOMMEND DESC, PLAN_COUNT DESC
+		  )
+		    WHERE ROWNUM BETWEEN 1 AND 3
+		</select>
+	  
+	  <!-- 게시글 상태값 추가 -->
+	  <update id="editorStatus" parameterType="String">
+		UPDATE T_PLAN
+		SET
+		    PLAN_STATUS = 'N'
+		WHERE
+		        USER_ID = #{value}
+	  </update>
+	  
+	  <!-- 게시글 신고수 증가 -->
+	  <update id="editorReport" parameterType="int">
+		UPDATE T_PLAN
+		SET PLAN_REPORT = PLAN_REPORT + 1
+		WHERE PLAN_ID = #{value}
+	  </update>
+	  
+</mapper>

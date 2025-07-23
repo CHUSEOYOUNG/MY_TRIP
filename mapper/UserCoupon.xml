@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sist.web.dao.UserCouponDao">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="userCouponResultMap" type="com.sist.web.model.UserCoupon">
+        <id     column="USER_COUPON_ID"      property="userCouponId" />
+        <result column="USER_ID"             property="userId" />
+        <result column="COUPON_ID"           property="couponId" />
+        <result column="USER_COUPON_NAME"    property="userCouponName" />
+        <result column="USER_COUPON_ISSUEDAY" property="userCouponIssueday" />
+        <result column="USER_COUPON_USE"     property="userCouponUse" />
+        <result column="USER_COUPON_USEDAY"  property="userCouponUseday" />
+        <result column="USER_COUPON_EXPIREDATE" property="userCouponExpiredate" />
+        <result property="couponType" column="COUPON_TYPE"/>
+    	<result property="couponAmount" column="COUPON_AMOUNT"/>
+    	<result property="couponMaxAmount" column="COUPON_MAX_AMOUNT"/>
+        
+        <result property="userName" column="USER_NAME"/>
+    	<result property="userEmail" column="USER_EMAIL"/>
+    </resultMap>
+
+    <!-- 유저가 특정 쿠폰을 발급받았는지 확인 -->
+    <select id="hasCoupon" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM T_USER_COUPON
+        WHERE USER_ID = #{userId}
+          AND COUPON_ID = #{couponId}
+    </select>
+
+    <!-- existsUserCoupon: 위와 동일, 이름만 다르게 -->
+    <select id="existsUserCoupon" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM T_USER_COUPON
+        WHERE USER_ID = #{userId}
+          AND COUPON_ID = #{couponId}
+    </select>
+
+    <!-- 쿠폰 발급 -->
+    <insert id="insertUserCoupon" parameterType="com.sist.web.model.UserCoupon">
+    INSERT INTO T_USER_COUPON (
+        USER_COUPON_ID,
+        USER_ID,
+        COUPON_ID,
+        USER_COUPON_NAME,
+        USER_COUPON_ISSUEDAY,
+        USER_COUPON_USE,
+        USER_COUPON_USEDAY,
+        USER_COUPON_EXPIREDATE
+    ) VALUES (
+        SEQ_USER_COUPON_ID.NEXTVAL,  <!-- 시퀀스 -->
+        #{userId},
+        #{couponId},
+        #{userCouponName},
+        #{userCouponIssueday},
+        #{userCouponUse},
+        #{userCouponUseday},
+        #{userCouponExpiredate}
+    )
+</insert>
+
+    <!-- 내가 발급받은 쿠폰 목록 -->
+    <select id="selectUserCouponList" resultMap="userCouponResultMap" parameterType="string">
+        SELECT *
+        FROM T_USER_COUPON
+        WHERE USER_ID = #{userId}
+        AND USER_COUPON_USE = 'N'
+        AND USER_COUPON_EXPIREDATE <![CDATA[>]]> SYSDATE
+        ORDER BY USER_COUPON_ISSUEDAY DESC
+    </select>
+	
+    
+    <!-- 쿠폰 상세 조회 -->
+<select id="selectUserCouponsByUserId" resultMap="userCouponResultMap" parameterType="string">
+    SELECT uc.USER_COUPON_ID,
+           uc.USER_ID,
+           uc.COUPON_ID,
+           uc.USER_COUPON_NAME,
+           uc.USER_COUPON_ISSUEDAY,
+           uc.USER_COUPON_USE,
+           uc.USER_COUPON_USEDAY,
+           uc.USER_COUPON_EXPIREDATE,
+           c.COUPON_TYPE,
+           c.COUPON_AMOUNT,
+           c.COUPON_MAX_AMOUNT
+    FROM T_USER_COUPON uc
+    JOIN T_COUPON c ON uc.COUPON_ID = c.COUPON_ID
+    WHERE uc.USER_ID = #{userId}
+    AND uc.USER_COUPON_USE = 'N'
+    ORDER BY uc.USER_COUPON_ISSUEDAY DESC
+</select>
+
+    <!-- 쿠폰 사용 처리 -->
+    <update id="updateUserCouponUse" parameterType="string">
+        UPDATE T_USER_COUPON
+        SET USER_COUPON_USE = 'Y',
+            USER_COUPON_USEDAY = SYSDATE
+        WHERE USER_COUPON_ID = #{userCouponId}
+    </update>
+    
+    <!-- 쿠폰 환불 처리 -->
+    <update id="updateUserCouponRefund" parameterType="string">
+        UPDATE T_USER_COUPON
+        SET USER_COUPON_USE = 'N'
+        WHERE USER_COUPON_ID = #{userCouponId}
+    </update>
+    
+	<select id="selectUserCouponById" parameterType="String" resultMap="userCouponResultMap">
+    SELECT 
+        uc.USER_COUPON_ID,
+        uc.USER_ID,
+        uc.COUPON_ID,
+        uc.USER_COUPON_NAME,
+        uc.USER_COUPON_ISSUEDAY,
+        uc.USER_COUPON_USE,
+        uc.USER_COUPON_USEDAY,
+        uc.USER_COUPON_EXPIREDATE,
+        c.COUPON_TYPE,
+        c.COUPON_AMOUNT,
+        c.COUPON_MAX_AMOUNT
+    FROM T_USER_COUPON uc
+    JOIN T_COUPON c ON uc.COUPON_ID = c.COUPON_ID
+    WHERE uc.USER_COUPON_ID = #{userCouponId}
+</select>
+</mapper>

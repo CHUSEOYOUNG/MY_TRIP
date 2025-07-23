@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.RoomManageDao">
+
+    <resultMap id="accomRoomResultMap" type="com.sist.web.model.AccommodationRoom">
+        <id     column="ACCOMM_ROOM_ID"              property="accommRoomId"/>
+        <result column="ACCOMM_ID"                   property="accommId"/>
+        <result column="ACCOMM_ROOM_NAME"            property="roomName"/>
+        <result column="ACCOMM_ROOM_SCALE"           property="roomScale"/>
+        <result column="ACCOMM_ROOM_COUNT"           property="roomCount"/>
+        <result column="ACCOMM_ROOM_STANDARD_PERSON" property="standardPerson"/>
+        <result column="ACCOMM_ROOM_BATHROOM"        property="bathroom"/>
+        <result column="ACCOMM_ROOM_BATH"            property="bath"/>
+        <result column="ACCOMM_ROOM_TV"              property="tv"/>
+        <result column="ACCOMM_ROOM_PC"              property="pc"/>
+        <result column="ACCOMM_ROOM_INTERNET"        property="internet"/>
+        <result column="ACCOMM_ROOM_REFRIGERATOR"    property="refrigerator"/>
+        <result column="ACCOMM_ROOM_SOFA"            property="sofa"/>
+        <result column="ACCOMM_ROOM_TABLE"           property="table"/>
+        <result column="ACCOMM_ROOM_DRYER"           property="dryer"/>
+        <result column="ACCOMM_ROOM_CHECKIN"         property="checkIn"/>
+        <result column="ACCOMM_ROOM_CHECKOUT"        property="checkOut"/>
+        <result column="ACCOMM_ROOM_STANDARD_PRICE"  property="standardPrice"/>
+        <result column="ACCOMM_ROOM_IMAGE"           property="roomImage"/>
+    </resultMap>
+
+    <!-- 다음 시퀀스 값 조회 -->
+    <select id="getNextAccommRoomSeq" resultType="string">
+        SELECT 'R_' || LPAD(ACCOMM_ROOM_SEQ.NEXTVAL, 6, '0') FROM dual
+    </select>
+    
+    <!-- 객실 정보 INSERT -->
+    <insert id="insertAccommodationRoom" parameterType="com.sist.web.model.AccommodationRoom">
+        INSERT INTO T_ACCOMM_ROOM (
+            ACCOMM_ROOM_ID, ACCOMM_ID, ACCOMM_ROOM_NAME, ACCOMM_ROOM_SCALE, ACCOMM_ROOM_COUNT,
+            ACCOMM_ROOM_STANDARD_PERSON, ACCOMM_ROOM_BATHROOM, ACCOMM_ROOM_BATH, ACCOMM_ROOM_TV,
+            ACCOMM_ROOM_PC, ACCOMM_ROOM_INTERNET, ACCOMM_ROOM_REFRIGERATOR, ACCOMM_ROOM_SOFA,
+            ACCOMM_ROOM_TABLE, ACCOMM_ROOM_DRYER, ACCOMM_ROOM_CHECKIN, ACCOMM_ROOM_CHECKOUT,
+            ACCOMM_ROOM_STANDARD_PRICE, ACCOMM_ROOM_IMAGE
+        ) VALUES (
+            #{accommRoomId}, #{accommId}, #{roomName}, #{roomScale}, #{roomCount},
+            #{standardPerson}, #{bathroom}, #{bath}, #{tv},
+            #{pc}, #{internet}, #{refrigerator}, #{sofa},
+            #{table}, #{dryer}, #{checkIn}, #{checkOut},
+            #{standardPrice}, #{roomImage}
+        )
+    </insert>
+    
+    <!-- 숙소별 객실 목록 조회 -->
+    <select id="findByAccommId" resultMap="accomRoomResultMap" parameterType="string">
+        SELECT * FROM T_ACCOMM_ROOM 
+        WHERE ACCOMM_ID = #{accommId}
+        ORDER BY ACCOMM_ROOM_ID
+    </select>
+    
+    <!-- 객실 ID로 객실 조회 -->
+    <select id="findByRoomId" resultMap="accomRoomResultMap" parameterType="string">
+        SELECT * FROM T_ACCOMM_ROOM 
+        WHERE ACCOMM_ROOM_ID = #{roomId}
+    </select>
+    
+    <delete id="deleteRoomById" parameterType="string">
+    DELETE FROM T_ACCOMM_ROOM WHERE ACCOMM_ROOM_ID = #{roomId}
+</delete>
+<select id="isDuplicateRoomName" resultType="int" parameterType="map">
+  SELECT COUNT(*)
+  FROM T_ACCOMM_ROOM
+  WHERE ACCOMM_ID = #{accommId}
+    AND ACCOMM_ROOM_NAME = #{roomName}
+</select>
+</mapper>
+

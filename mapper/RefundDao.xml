@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sist.web.dao.RefundDao">
+
+    <!-- Refund 결과 매핑 -->
+    <resultMap id="refundResultMap" type="com.sist.web.model.Refund">
+        <id column="REFUND_ID" property="refundId"/>
+        <result column="USER_ID" property="userId"/>
+        <result column="REFUND_CAUSE" property="refundCause"/>
+        <result column="ORDER_ID" property="orderId"/>
+        <result column="REFUND_RESULT" property="refundResult"/>
+    </resultMap>
+
+    <!-- 환불 내역 삽입 -->
+    <insert id="insertRefund" parameterType="com.sist.web.model.Refund">
+        INSERT INTO T_REFUND (
+            REFUND_ID,
+            USER_ID,
+            REFUND_CAUSE,
+            ORDER_ID,
+            REFUND_RESULT
+        )
+        VALUES (
+            #{refundId},
+            #{userId},
+            #{refundCause},
+            #{orderId},
+            #{refundResult}
+        )
+    </insert>
+
+    <!-- 주문 ID 기준으로 환불 내역 조회 -->
+    <select id="getRefundByOrderId" parameterType="String" resultMap="refundResultMap">
+        SELECT * FROM T_REFUND
+        WHERE ORDER_ID = #{orderId}
+    </select>
+
+    <!-- 환불 상태 변경 -->
+    <update id="updateRefundResult" parameterType="map">
+        UPDATE T_REFUND
+        SET REFUND_RESULT = #{refundResult}
+        WHERE REFUND_ID = #{refundId}
+    </update>
+	
+	<select id="getRefundSeq" resultType="String">
+	  SELECT 'RF_' || TO_CHAR(refund_seq.NEXTVAL, 'FM000000') FROM DUAL
+	</select>
+</mapper>

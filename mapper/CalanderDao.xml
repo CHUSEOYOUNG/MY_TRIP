@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.CalanderDao">
+
+<resultMap id="calanderListResultMap" type="com.sist.web.model.CalanderList">
+        <id property="calanderListId" column="T_CALANDER_LIST_ID"/>
+        <result property="userId" column="USER_ID"/>
+        <result property="calanderListName" column="CALANDER_LIST_NAME"/>
+        <result property="calanderListStartDate" column="T_CALANDER_LIST_STARTDATE"/>
+        <result property="calanderListEndDate" column="T_CALANDER_LIST_ENDDATE"/>
+    </resultMap>
+
+    <!-- 일정 상세 매핑 -->
+<resultMap id="calanderResultMap" type="com.sist.web.model.Calander">
+    <id property="calanderId" column="CALANDER_ID"/>
+    <result property="calanderListId" column="T_CALANDER_LIST_ID"/>
+    <result property="spotId" column="SPOT_ID"/>
+    <result property="calanderStartTime" column="CALANDER_START_TIME"/>
+    <result property="calanderEndTime" column="CALANDER_END_TIME"/>
+    <result property="locationName" column="LOCATION_NAME" />
+    <result column="LAT" property="lat"/>
+<result column="LON" property="lon"/>
+<result property="calDayNo" column="CAL_DAY_NO"/>
+<result column="IMAGE_URL" property="imageUrl"/>
+
+
+</resultMap>
+
+<resultMap id="placeListResultMap" type="com.sist.web.model.UserPlace">
+        <id property="placeId" column="PLACE_ID"/>
+        <result property="placeName" column="PLACE_NAME"/>
+        <result property="lat" column="LAT"/>
+        <result property="lon" column="LON"/>
+    </resultMap>
+
+ <insert id="insertCalanderList" parameterType="com.sist.web.model.CalanderList">
+        INSERT INTO T_CALANDER_LIST (
+            T_CALANDER_LIST_ID, USER_ID, CALANDER_LIST_NAME, T_CALANDER_LIST_STARTDATE, T_CALANDER_LIST_ENDDATE
+        ) VALUES (
+            #{calanderListId}, #{userId}, #{calanderListName}, #{calanderListStartDate}, #{calanderListEndDate}
+        )
+    </insert>
+
+    <!-- 일정 상세 저장 -->
+<insert id="insertCalander" parameterType="com.sist.web.model.Calander">
+    INSERT INTO T_CALANDER(
+        CALANDER_ID, T_CALANDER_LIST_ID, SPOT_ID, CALANDER_START_TIME, CALANDER_END_TIME, CAL_DAY_NO
+    ) VALUES (
+        #{calanderId}, #{calanderListId}, #{spotId}, TO_DATE(#{calanderStartTime}, 'YYYY-MM-DD HH24:MI:SS'), TO_DATE(#{calanderEndTime}, 'YYYY-MM-DD HH24:MI:SS'), #{calDayNo}
+    )
+</insert>
+
+<select id="getCalanderWithUnifiedSpotName"  resultMap="calanderResultMap">
+  SELECT DISTINCT C.CALANDER_ID, C.T_CALANDER_LIST_ID, C.SPOT_ID,
+         TO_CHAR(C.CALANDER_START_TIME, 'YYYY-MM-DD HH24:MI:SS') AS CALANDER_START_TIME,
+         TO_CHAR(C.CALANDER_END_TIME, 'YYYY-MM-DD HH24:MI:SS') AS CALANDER_END_TIME,
+         C.CAL_DAY_NO,
+         V.LOCATION_NAME, V.LAT, V.LON
+  FROM T_CALANDER C
+  JOIN (
+      SELECT TOUR_ID AS LOCATION_ID, TOUR_NAME AS LOCATION_NAME, TOUR_LAT AS LAT, TOUR_LON AS LON FROM T_TOUR
+      UNION ALL
+      SELECT ACCOMM_ID AS LOCATION_ID, ACCOMM_NAME AS LOCATION_NAME, ACCOMM_LAT AS LAT, ACCOMM_LON AS LON FROM T_ACCOMM
+      UNION ALL
+	  SELECT PLACE_ID  AS LOCATION_ID, PLACE_NAME AS LOCATION_NAME, LAT, LON FROM T_USER_PLACE
+  ) V ON C.SPOT_ID = V.LOCATION_ID
+  WHERE C.T_CALANDER_LIST_ID = #{listId}
+  ORDER BY C.CAL_DAY_NO ASC, CALANDER_START_TIME ASC
+</select>
+
+
+<select id="selectListById" resultMap="calanderListResultMap">
+    SELECT * FROM T_CALANDER_LIST WHERE T_CALANDER_LIST_ID = #{listId}
+</select>
+
+<delete id="deleteCalandersByListId">
+    DELETE FROM T_CALANDER WHERE T_CALANDER_LIST_ID = #{listId}
+</delete>
+<delete id="deleteCalanderListById" parameterType="String">
+    DELETE FROM T_CALANDER_LIST WHERE T_CALANDER_LIST_ID = #{listId}
+</delete>
+
+<select id="getCalanderListsByUser"
+        resultMap="calanderListResultMap"
+        parameterType="string">
+  SELECT T_CALANDER_LIST_ID,
+         USER_ID,
+         CALANDER_LIST_NAME,
+         T_CALANDER_LIST_STARTDATE,
+         T_CALANDER_LIST_ENDDATE
+  FROM   T_CALANDER_LIST l
+  WHERE  USER_ID = #{userId}
+    AND EXISTS (
+      SELECT 1
+      FROM T_CALANDER c
+      WHERE c.T_CALANDER_LIST_ID = l.T_CALANDER_LIST_ID
+    )
+  ORDER BY T_CALANDER_LIST_STARTDATE DESC
+</select>
+
+<insert id="insertManualPlace" parameterType="com.sist.web.model.UserPlace">
+    INSERT INTO T_USER_PLACE (
+        PLACE_ID, PLACE_NAME, LAT, LON, USER_ID
+    ) VALUES (
+        #{placeId}, #{placeName}, #{lat}, #{lon}, #{userId}
+    )
+</insert>
+</mapper>
+

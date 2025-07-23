@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.PcommentDao">
+	<!-- 댓글 resultMap -->
+	  <resultMap type="com.sist.web.model.Pcomment" id="pcommentResultMap">
+	  	   <id column="COMMENT_ID" property="commentId" />
+		   <result column="PLAN_ID" property="planId" />
+	       <result column="USER_ID" property="userId" />
+	       <result column="PLAN_COMMENT_CONTENT" property="planCommentContent" />
+	       <result column="PLAN_COMMENT_PARENT" property="planCommentParent" />
+	       <result column="PLAN_COMMENT_DATE" property="planCommentDate" />
+	       <result column="PLAN_COMMENT_REPORT" property="planCommentReport" />
+	  </resultMap>
+	  
+	  <!-- 댓글 등록 -->
+	  <insert id="pcommentInsert" parameterType="com.sist.web.model.Pcomment">
+		  INSERT INTO T_PLAN_COMMENT (
+			    COMMENT_ID,
+			    PLAN_ID,
+			    USER_ID,
+			    PLAN_COMMENT_CONTENT,
+			    PLAN_COMMENT_PARENT,
+			    PLAN_COMMENT_DATE,
+			    PLAN_COMMENT_REPORT
+			) VALUES ( PLAN_COMMENT_SEQ.NEXTVAL,
+			           #{planId},
+			           #{userId},
+			           #{planCommentContent},
+			           0,
+			           SYSDATE,
+			           0 )
+	  </insert>
+	  
+	  <!-- 댓글 목록 -->
+	  <select id="pcommentList" parameterType="int" resultMap="pcommentResultMap">
+		  SELECT
+			    COMMENT_ID,
+			    PLAN_ID,
+			    USER_ID,
+			    PLAN_COMMENT_CONTENT,
+			    PLAN_COMMENT_PARENT,
+			    PLAN_COMMENT_DATE,
+			    PLAN_COMMENT_REPORT
+			FROM
+			    T_PLAN_COMMENT
+			WHERE
+			    PLAN_ID = #{value}
+			ORDER BY PLAN_COMMENT_DATE DESC
+	  </select>
+	  
+	  <!-- 댓글 삭제 -->
+	  <delete id="pcommentDelete" parameterType="int">
+		  DELETE T_PLAN_COMMENT
+		   WHERE COMMENT_ID = #{value}
+	  </delete>
+	  
+	  <!-- 게시글 삭제 시 댓글 삭제 -->
+	  <delete id="pcommentAllDelete" parameterType="int">
+		DELETE T_PLAN_COMMENT
+		 WHERE PLAN_ID = #{value}
+	  </delete>
+	  
+	  <!-- 댓글 선택 -->
+	  <select id="pcommentSelect" parameterType="int" resultMap="pcommentResultMap">
+		  SELECT
+			    COMMENT_ID,
+			    PLAN_ID,
+			    USER_ID,
+			    PLAN_COMMENT_CONTENT,
+			    PLAN_COMMENT_PARENT,
+			    PLAN_COMMENT_DATE,
+			    PLAN_COMMENT_REPORT
+			FROM
+			    T_PLAN_COMMENT
+			WHERE
+			    COMMENT_ID = #{value}
+	  </select>
+	  
+	  <!-- 댓글 수정 -->
+	  <update id="pcommentUpdate" parameterType="com.sist.web.model.Pcomment">
+	  UPDATE T_PLAN_COMMENT
+		SET
+		    PLAN_COMMENT_CONTENT = #{planCommentContent}
+		WHERE
+		        COMMENT_ID = #{commentId}
+	  </update>
+	  
+	  <!-- 댓글 갯수 -->
+	  <select id="pcommentCount" parameterType="int" resultType="int">
+		  SELECT COUNT(*) AS CNT
+			FROM
+			    T_PLAN_COMMENT
+			WHERE
+			PLAN_ID = #{value}
+	  </select>
+	  
+	  <!-- 댓글 목록 -->
+	  <select id="pcommentMycomment" parameterType="String" resultMap="pcommentResultMap">
+		  SELECT
+			    COMMENT_ID,
+			    PLAN_ID,
+			    USER_ID,
+			    PLAN_COMMENT_CONTENT,
+			    PLAN_COMMENT_PARENT,
+			    PLAN_COMMENT_DATE,
+			    PLAN_COMMENT_REPORT
+			FROM
+			    T_PLAN_COMMENT
+			WHERE
+			    USER_ID = #{value}
+			ORDER BY PLAN_COMMENT_DATE DESC
+	  </select>
+	  
+</mapper>
