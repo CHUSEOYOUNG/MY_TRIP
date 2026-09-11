@@ -63,6 +63,16 @@ import com.sist.web.util.SessionUtil;
 public class UserController 
 {
 private static Logger logger = LoggerFactory.getLogger(UserController.class);
+
+	private static String requiredEnv(String name)
+	{
+		String value = System.getenv(name);
+		if (StringUtil.isEmpty(value))
+		{
+			throw new IllegalStateException(name + " environment variable is required.");
+		}
+		return value;
+	}
 	
 	
 	@Value("#{env['upload.save.dir']}")
@@ -120,7 +130,6 @@ private static Logger logger = LoggerFactory.getLogger(UserController.class);
 				        logger.debug("SessionUserId 222: " + userId);
 				        
 						logger.debug("userId : " + userId);
-						logger.debug("userPassword hex : " + CookieUtil.stringToHex(userId));
 						ajaxResponse.setResponse(0, "success");
 					}
 					else
@@ -471,9 +480,6 @@ private static Logger logger = LoggerFactory.getLogger(UserController.class);
 		{
 			String cookieUserId = CookieUtil.getHexValue(request, AUTH_USER_NAME);
 			String newPassword = HttpUtil.get(request, "userPassword");
-			
-			logger.debug("입력한 비밀번호3333333:>>>>>>>>>>><<<<<<<<<<<<<<<<"+newPassword);
-			
 			User user = userService.userSelect(cookieUserId);
 			
 			user.setUserPassword(newPassword);
@@ -504,12 +510,7 @@ private static Logger logger = LoggerFactory.getLogger(UserController.class);
 	{
 		String currentPassword = HttpUtil.get(request, "currentPassword");
 		String cookieUserId = CookieUtil.getHexValue(request, AUTH_USER_NAME);
-		
-		logger.debug("입력한 비밀번호:>>>>>>>>>>><<<<<<<<<<<<<<<<"+currentPassword);
-		
 		User user = userService.userSelect(cookieUserId);
-		
-		logger.debug("DB 비밀번호: >>>>>>>>>>><<<<<<<<<<<<<<<<" + user.getUserPassword());
 		return user.getUserPassword().equals(currentPassword);
 
 	}
@@ -531,7 +532,7 @@ private static Logger logger = LoggerFactory.getLogger(UserController.class);
 	public String kakaoLogin(@RequestParam("code") String code, HttpSession session)
 	{
         
-		String clientId = "80e4419557c7b5feaa6bcbaa1cae6ae8";
+		String clientId = requiredEnv("KAKAO_CLIENT_ID");
 	    //String redirectUri = "http://finalproject.sist.co.kr:8088/user/kakaoLogin";
 		String redirectUri = "http://finalproject.sist.co.kr:8088/user/kakaoLogin";
 	    String tokenUrl = "https://kauth.kakao.com/oauth/token";
@@ -782,7 +783,7 @@ private static Logger logger = LoggerFactory.getLogger(UserController.class);
 		
 
 	    //클라이언트 ID 선언 추가
-		String clientId     = "lkNsq2Vywv4DNarVaHOI"; 
+		String clientId = requiredEnv("NAVER_CLIENT_ID");
 	    String redirectUri  = "http://finalproject.sist.co.kr:8088/user/naverLogin";
     
 	    
@@ -812,8 +813,8 @@ private static Logger logger = LoggerFactory.getLogger(UserController.class);
 	{
 		
 		 //클라이언트 ID와 보안키값 선언해야 함
-		 String clientId = "lkNsq2Vywv4DNarVaHOI";
-		 String clientSecret = "HEw1NA98WG";
+		 String clientId = requiredEnv("NAVER_CLIENT_ID");
+		 String clientSecret = requiredEnv("NAVER_CLIENT_SECRET");
          //state 검증
          String savedState = (String) session.getAttribute("naver_state");
          if (savedState == null || !savedState.equals(state)) {

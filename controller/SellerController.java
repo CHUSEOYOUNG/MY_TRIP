@@ -94,7 +94,6 @@ public class SellerController
 			        session.setAttribute("sellerId", sellerId);
 			        
 			    	logger.debug("userId : " + sellerId);
-					logger.debug("userPassword hex : " + CookieUtil.stringToHex(sellerId));
 					ajaxResponse.setResponse(0, "success");
 				}
 				else
@@ -384,10 +383,8 @@ public class SellerController
 	{
 		String currentPassword = HttpUtil.get(request, "currentPassword");
 		String cookieSellerId = CookieUtil.getHexValue(request, AUTH_SELLER_NAME);
-		logger.debug("입력한 비밀번호:>>>>>>>>>>><<<<<<<<<<<<<<<<"+currentPassword);
 		
 		Seller seller = sellerService.sellerSelect(cookieSellerId);
-		logger.debug("DB 비밀번호: >>>>>>>>>>><<<<<<<<<<<<<<<<" + seller.getSellerPassword());
 		return seller.getSellerPassword().equals(currentPassword);
 	
 	}
